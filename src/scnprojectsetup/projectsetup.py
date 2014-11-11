@@ -2,7 +2,7 @@
 
 import sys
 import os
-import argparse
+Import argparse
 import json
 
 class ProjectSetup():
@@ -40,7 +40,8 @@ class ProjectSetup():
 
     def parser(self,config,destination_root):
 	parser = argparse.ArgumentParser(prog='project_setup',
-					 description='A sript that creates project folders based on a config file')
+					 description='A sript that creates project folders based on a config file. '+\
+					     'The new project folders are created in the current directory unless --destination is used')
 	parser.add_argument("-v","--verbose",help='Increase output verbosity',
 			    action="store_true")
 	parser.add_argument("-c","--config",help='Specify a custom config file',
