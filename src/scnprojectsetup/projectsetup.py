@@ -28,7 +28,7 @@ class ProjectSetup():
 
     def _dirtyString(self,string):
 	# only allow lowercase and underscore
-	clean_string_verification = 'abcdefghijklmnopqrstuvwxyz_'
+	clean_string_verification = 'abcdefghijklmnopqrstuvwxyz_0123456789'
 	clean_string = ''.join([x for x in string if x in clean_string_verification])
 	# check for uppercase letters
 	if string.isupper() or not (string.isupper() or string.islower()):
