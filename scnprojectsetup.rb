@@ -7,10 +7,7 @@ class Scnprojectsetup < Formula
 
   def install
     # Remove unrecognized options if warned by configure
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}"
-    system "make", "install"
+    system "make", "prefix=#{prefix}",
+    	   	   "install"
   end
 end
