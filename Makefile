@@ -11,11 +11,11 @@ SRC_DIR=src
 FILES= \
 __init__.py \
 config.json \
-projectsetup.py
+scnprojectsetup.py
 
 prefix=/usr
 BIN_DIR=${prefix}/bin
-INSTALL_DIR=$(BIN_DIR)/scnprojectsetup
+INSTALL_DIR=$(BIN_DIR)
 
 all:
 
@@ -23,8 +23,8 @@ install:
 	install -d $(INSTALL_DIR)
 	install -m 644 $(addprefix src/,$(FILES)) $(INSTALL_DIR)
 
-	ln -s $(INSTALL_DIR)/projectsetup.py $(BIN_DIR)/projectsetup
-	chmod +x $(BIN_DIR)/projectsetup
+	# ln -s $(INSTALL_DIR)/$(NAME).py $(BIN_DIR)/$(NAME)
+	# chmod +x $(BIN_DIR)/$(NAME)
 
 dist:
 	install -d $(BUILD_ROOT)

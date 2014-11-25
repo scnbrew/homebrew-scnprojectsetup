@@ -8,6 +8,6 @@ class Scnprojectsetup < Formula
   def install
     # Remove unrecognized options if warned by configure
     system "make", "prefix=#{prefix}",
-    	   	   "install"
+                   "install"
   end
 end
