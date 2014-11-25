@@ -38,6 +38,7 @@ tar:
 brew:HASH=$(shell openssl sha1 $(BUILD_ROOT)/$(TAR_NAME).tar.gz | tail -c 41)
 brew:
 	sed -i.tmp "s/sha1.*/sha1 \"$(HASH)\"/g" $(NAME).rb
+	sed -i.tmp "/url/s/scnprojectsetup_...../scnprojectsetup_$(VERSION)/g" $(NAME).rb
 	rm $(NAME).rb.tmp
 
 distclean:
@@ -47,4 +48,3 @@ dist:	distclean tar brew
 
 	install -d ../dist
 	cp $(BUILD_ROOT)/$(TAR_NAME).tar.gz ../dist
-
