@@ -6,11 +6,11 @@ BASE_DIR=dist
 BUILD_ROOT=$(BASE_DIR)/$(NAME)_$(VERSION)
 
 TAR_NAME=$(NAME)_$(VERSION)
-SRC_DIR=$(NAME)
+SRC_DIR=src
 FILES= \
 __init__.py \
 config.json \
-scnprojectsetup.py
+scnprojectsetup
 
 prefix=/usr
 BIN_DIR=${prefix}/bin
