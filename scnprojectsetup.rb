@@ -7,11 +7,16 @@ require "formula"
 class Scnprojectsetup < Formula
   homepage "http://shortcutolso.no"
 <<<<<<< HEAD
+<<<<<<< HEAD
   url "https://raw.githubusercontent.com/santonsen/homebrew-scnprojectsetup/master/dist/scnprojectsetup-0.0.1.tar.gz"
   sha1 ""
 =======
   url "https://github.com/santonsen/homebrew-scnprojectsetup/blob/master/dist/scnprojectsetup-0.0.1.tar.gz"
   sha1 "41ae7b3c584ec7fca7589c96a7b031313b16df34"
+>>>>>>> master
+=======
+  url "https://raw.githubusercontent.com/santonsen/homebrew-scnprojectsetup/master/dist/scnprojectsetup-0.0.1.tar.gz"
+  sha1 ""
 >>>>>>> master
 
   def install
