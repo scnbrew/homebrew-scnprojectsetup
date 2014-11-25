@@ -11,6 +11,6 @@ SRC_DIR=src
 
 all:
 
-tar:
+dist:
 	install -d $(BUILD_ROOT)
 	tar -zcvf $(BUILD_ROOT)/$(TAR_NAME).tar.gz $(SRC_DIR)
