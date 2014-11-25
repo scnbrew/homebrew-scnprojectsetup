@@ -1,8 +1,8 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python
 
 import sys
 import os
-Import argparse
+import argparse
 import json
 
 class ProjectSetup():
