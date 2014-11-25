@@ -23,10 +23,7 @@ all:
 
 install:
 	install -d $(INSTALL_DIR)
-	install -m 644 $(addprefix $(NAME)/,$(FILES)) $(INSTALL_DIR)
-
-	# ln -s $(INSTALL_DIR)/$(NAME).py $(BIN_DIR)/$(NAME)
-	# chmod +x $(BIN_DIR)/$(NAME)
+	install -m 644 $(FILES) $(INSTALL_DIR)
 
 tar:
 	install -d $(BUILD_ROOT)
