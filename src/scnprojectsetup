@@ -4,12 +4,20 @@ import sys
 import os
 import argparse
 import json
+import shutil
+
+from socket import gethostname
+from pwd import getpwuid
+from datetime import datetime
+from subprocess import check_output
 
 class ProjectSetup():
 
     def __init__(self):
 	here = str(os.path.dirname(os.path.realpath(__file__)))
 	config = os.path.join(here,'config.json')
+
+	self.version = '1.2.0'
 
 	self.project_types = ['ftr','shr','tlr','tvc']
 	self.destination = None
@@ -21,7 +29,10 @@ class ProjectSetup():
 
 	self._createProject(self.paths)
 
-	self._touchProjectFile(self.destination)
+	project_file = self._touchProjectFile(self.destination)
+
+	xself._pipeProjectInfo(project_file)
+	self._duplicateProjectFile(project_file)
 
     def _dirtyString(self,string):
 	# only allow lowercase and underscore
@@ -75,7 +86,7 @@ class ProjectSetup():
 		project_type = project_types[project_type]
 	    except:
 		sys.exit(args.type + ' is not a recognised project type' +\
-                             '\nRecognized types: %s' % ' '.join(self.project_types))
+			     '\nRecognized types: %s' % ' '.join(self.project_types))
 	if verbose:
 	    print 'PROJECT TYPE: %s' % project_type
 
@@ -126,11 +137,36 @@ class ProjectSetup():
 		os.makedirs(path)
 	    except OSError as e:
 		existing_folder = os.path.join(self.destination,self.args.type)
-		sys.exit("%s already exists" % existing_folder)
+		sys.exit("%s already exists.\nNo project folders created" % existing_folder)
 
     def _touchProjectFile(self,destination):
 	project_file = os.path.join(destination,(self.args.name + '.txt'))
-	open(project_file, 'a').close()
+	if not os.path.isfile(project_file):
+	    open(project_file, 'a').close()
+
+	return project_file
+
+    def _pipeProjectInfo(self,project_file):
+	info_string = \
+	    'Name of project: %s' % self.args.name +\
+	    '\nProject path: %s' % self.destination +\
+	    '\nProject type: %s' % self.args.type +\
+	    '\nCreated with: scnprojectsetup %s' % self.version +\
+	    '\nCreator: %s@%s' %  (getpwuid(os.getuid()).pw_name, gethostname()) +\
+	    '\nCreation date: %s' % str(datetime.now())[:-7] +\
+	    '\n' +\
+	    '\nUptime at creation: %s' % str(check_output("uptime")) +\
+	    '\nMounted volumes at creation time:\n%s' % str(check_output(["df","-h"])) +\
+	    '\n\n==============================\n\n'
+
+	with open(project_file, 'a') as project_file:
+	    project_file.write(info_string)
+
+    def _duplicateProjectFile(self, project_file):
+	# TODO: duplicate project_file and prepend a '.'
+	index = project_file.rfind('/')
+	tech_file = project_file[:index+1] + '.' + project_file[index+1:]
+	shutil.copy(project_file,tech_file)
 
 if __name__ == '__main__':
     scnprojectsetup = ProjectSetup()
