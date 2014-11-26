@@ -1,6 +1,12 @@
 {
     "project": [
 	["_admin/"],
+	["_source/"],
+	["_source/dnxhd/"],
+	["_source/dpx/"],
+	["_source/inserts/"],
+	["_source/prores/"],
+	["_source/raw"],
 	["audio/"],
 	["audio/mst/"],
 	["audio/wip/"],
@@ -27,15 +33,7 @@
 	["online/gfx/"],
 	["online/lut/"],
 	["online/projects/"],
-	["online/render"]
-    ],
-    "ftr": [
-	["_source/"],
-	["_source/dnxhd/"],
-	["_source/dpx/"],
-	["_source/inserts/"],
-	["_source/prores/"],
-	["_source/raw"],
+	["online/render"],
 	["tmp/"],
 	["tmp/client_relations/"],
 	["vfx/"],
@@ -44,23 +42,13 @@
 	["vfx/grid/"],
 	["vfx/overlay/"],
 	["vfx/plates/"]
+    ],
+    "ftr": [
     ],
     "shr": [
     ],
     "tlr": [
-	["_source/"],
-	["_source/dnxhd/"],
-	["_source/dpx/"],
-	["_source/inserts/"],
-	["_source/prores/"],
-	["_source/raw"],
-	["tmp/"],
-	["tmp/client_relations/"],
-	["vfx/"],
-	["vfx/comp/"],
-	["vfx/grain/"],
-	["vfx/grid/"],
-	["vfx/overlay/"],
-	["vfx/plates/"]
+    ],
+    "tvc": [
     ]
 }

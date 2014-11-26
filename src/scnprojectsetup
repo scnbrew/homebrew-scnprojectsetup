@@ -8,23 +8,20 @@ import json
 class ProjectSetup():
 
     def __init__(self):
-	# temp - destination root
-	destination_root = os.getcwd()
 	here = str(os.path.dirname(os.path.realpath(__file__)))
 	config = os.path.join(here,'config.json')
 
-	self.project_types = ['ftr','shr','tlr']
+	self.project_types = ['ftr','shr','tlr','tvc']
 	self.destination = None
 
-	self.args = self.parser(config, destination_root)
-	self.destination = self.processArgs(self.args, self.project_types)
-	self.paths = self.getProjectPaths(config, self.args.type, self.destination)
+	self.args = self._parser(config)
 
-	self.createProject(self.paths)
+	self.destination = self._processArgs(self.args, self.project_types)
+	self.paths = self._getProjectPaths(config, self.args.type, self.destination)
 
-	# TODO: genereate text file in PROJECT/ROOT called PROJECT_NAME
-	# creates a file with no extension. Is this what we want?
-	self.touchProjectFile(self.destination)
+	self._createProject(self.paths)
+
+	self._touchProjectFile(self.destination)
 
     def _dirtyString(self,string):
 	# only allow lowercase and underscore
@@ -38,25 +35,30 @@ class ProjectSetup():
 	else:
 	    return False
 
-    def parser(self,config,destination_root):
-	parser = argparse.ArgumentParser(prog='project_setup',
-					 description='A sript that creates project folders based on a config file. '+\
-					     'The new project folders are created in the current directory unless --destination is used')
+    def _parser(self,config):
+	parser = argparse.ArgumentParser(prog='scnprojectsetup',
+					 description='A sript that creates project folders based on a config file.',
+					 usage='scnprojectsetup name type destination [-h] [-v] [-c FILE]\n'+\
+					     'example: scnprojectsetup lhs03e01 ftr /Volumes/scn_ftr_04')
+	parser.add_argument("name",help="Project name")
+	parser.add_argument("type",help=("Project type: " + ' '.join(self.project_types)))
+	parser.add_argument("destination",help="Specify the destination folder",
+			    metavar='FOLDER')
 	parser.add_argument("-v","--verbose",help='Increase output verbosity',
 			    action="store_true")
 	parser.add_argument("-c","--config",help='Specify a custom config file',
 			    default=config,
 			    metavar='FILE')
-	# TODO: remove the default form destination and make it compulsory
-	parser.add_argument("-d","--destination",help="Specify a custom destination folder",
-			    default=destination_root,
-			    metavar='FOLDER')
-	parser.add_argument("name",help="Project name")
-	parser.add_argument("type",help="Project type: ftr, shr, trl")
-	args = parser.parse_args()
+	if len(sys.argv) == 4:
+	    args = parser.parse_args()
+	else:
+	    print 'scnprojectsetup: error: too few arguments\n'
+	    parser.print_help()
+	    sys.exit(0)
+
 	return args
 
-    def processArgs(self,args,project_types):
+    def _processArgs(self,args,project_types):
 	project_type = args.type
 	project_name = args.name
 	verbose = args.verbose
@@ -72,7 +74,8 @@ class ProjectSetup():
 		project_type = int(project_type)
 		project_type = project_types[project_type]
 	    except:
-		sys.exit(args.type + ' is not a recognised project type')
+		sys.exit(args.type + ' is not a recognised project type' +\
+                             '\nRecognized types: %s' % ' '.join(self.project_types))
 	if verbose:
 	    print 'PROJECT TYPE: %s' % project_type
 
@@ -96,7 +99,7 @@ class ProjectSetup():
 
 	return destination
 
-    def getProjectPaths(self,project_folders_cfg,path_type,path_root):
+    def _getProjectPaths(self,project_folders_cfg,path_type,path_root):
 	# load the config file
 	json_data = open(project_folders_cfg)
 	folder_cfg = json.load(json_data)
@@ -117,7 +120,7 @@ class ProjectSetup():
 	# return all paths to be created as a list of strings
 	return project_paths
 
-    def createProject(self,paths):
+    def _createProject(self,paths):
 	for path in paths:
 	    try:
 		os.makedirs(path)
@@ -125,9 +128,9 @@ class ProjectSetup():
 		existing_folder = os.path.join(self.destination,self.args.type)
 		sys.exit("%s already exists" % existing_folder)
 
-    def touchProjectFile(self,destination):
-	project_file = os.path.join(destination,self.args.name)
+    def _touchProjectFile(self,destination):
+	project_file = os.path.join(destination,(self.args.name + '.txt'))
 	open(project_file, 'a').close()
 
 if __name__ == '__main__':
-    project_setup = ProjectSetup()
+    scnprojectsetup = ProjectSetup()
