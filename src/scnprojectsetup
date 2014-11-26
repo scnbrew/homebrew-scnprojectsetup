@@ -17,7 +17,7 @@ class ProjectSetup():
 	here = str(os.path.dirname(os.path.realpath(__file__)))
 	config = os.path.join(here,'config.json')
 
-	self.version = '1.2.0'
+	self.version = '1.2.1'
 
 	self.project_types = ['ftr','shr','tlr','tvc']
 	self.destination = None
@@ -31,7 +31,7 @@ class ProjectSetup():
 
 	project_file = self._touchProjectFile(self.destination)
 
-	xself._pipeProjectInfo(project_file)
+	self._pipeProjectInfo(project_file)
 	self._duplicateProjectFile(project_file)
 
     def _dirtyString(self,string):
