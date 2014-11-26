@@ -1,5 +1,5 @@
 NAME = scnprojectsetup
-VERSION = 1.1.0
+VERSION = 1.2.0
 MAINTAINER = Sebastian Antonsen <sebastian@stormstudios.no>
 
 BASE_DIR=dist
@@ -25,6 +25,9 @@ install:
 	install -d $(INSTALL_DIR)
 	install -m 644 $(FILES) $(INSTALL_DIR)
 
+pythonversion:
+	sed -i.tmp "s/self\.version = '.....'/self\.version = '$(VERSION)'/" $(SRC_DIR)/$(NAME)
+	rm $(SRC_DIR)/$(NAME).tmp
 tar:
 	install -d $(BUILD_ROOT)
 
@@ -41,7 +44,7 @@ brew:
 distclean:
 	if [ -d ./dist ]; then rm -r dist; fi
 
-dist:	distclean tar brew
+dist:	distclean pythonversion tar brew
 
 	install -d ../dist
 	cp $(BUILD_ROOT)/$(TAR_NAME).tar.gz ../dist
