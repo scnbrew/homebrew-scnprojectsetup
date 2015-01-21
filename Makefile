@@ -1,5 +1,5 @@
 NAME = scnprojectsetup
-VERSION = 1.2.1
+VERSION = 1.2.2
 MAINTAINER = Sebastian Antonsen <sebastian@stormstudios.no>
 
 BASE_DIR=dist
@@ -8,7 +8,6 @@ BUILD_ROOT=$(BASE_DIR)/$(NAME)_$(VERSION)
 TAR_NAME=$(NAME)_$(VERSION)
 SRC_DIR=src
 FILES= \
-__init__.py \
 config.json \
 scnprojectsetup
 
