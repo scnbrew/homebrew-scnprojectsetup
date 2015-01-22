@@ -19,7 +19,7 @@ class ProjectSetup():
 
 	self.version = '1.2.1'
 
-	self.project_types = ['ftr','shr','tlr','tvc']
+	self.project_types = ['ftr','shr','tlr','tvc','prm']
 	self.destination = None
 
 	self.args = self._parser(config)
