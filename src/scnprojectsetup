@@ -14,38 +14,54 @@ from subprocess import check_output
 class ProjectSetup():
 
     def __init__(self):
-        # coloured print
-        self.blue_print = '\033[0;36m{0}\033[1;m'
 
+        self.version = '1.4.0'
+
+        # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
-        config = os.path.join(here,'config.json')
+        json_config = os.path.join(here,'config.json')
 
-        self.version = '1.3.3'
+        # initialise None variables that are defined inside functions
+        self.project_types = None
+        self.project_type_descriptions = None
 
-        self.project_types = ['ftr','shr','tlr','tvc','prm','epk']
-        self.project_type_descriptions = [\
-                                          '(feature)',
-                                          '(short)',
-                                          '(trailer)',
-                                          '(tv commercial)',
-                                          '(promo)',
-                                          '(electronic press kit)']
-        self.destination = None
+        # initialise the config file and get user arguments
+        self.config = self._initConfig(json_config)
+        self.args = self._parser(json_config)
 
-        self.args = self._parser(config)
-
+        # process the arguments
         self.destination = self._processArgs(self.args, self.project_types)
-        self.paths = self._getProjectPaths(config, self.args.type, self.destination)
+        self.paths = self._getProjectPaths(self.args.type, self.destination)
 
+        # create the project as specified
         self._createProject(self.paths)
 
+        # create log files.
         project_file = self._touchProjectFile(self.destination)
-
         self._pipeProjectInfo(project_file)
         self._duplicateProjectFile(project_file)
 
 
-    def _dirtyString(self,string):
+    def _initConfig(self,json_config):
+        # load the json file into memory as a dictionary
+        json_data = open(json_config)
+        config = json.load(json_data)
+        json_data.close()
+
+        # get all the project types and descriptions
+        project_types = sorted(config['project_types'].keys())
+        project_type_descriptions = []
+        for i in project_types:
+            description = config['project_types'][i]['description']
+            project_type_descriptions.append('({0})'.format(description))
+
+        self.project_types = project_types
+        self.project_type_descriptions = project_type_descriptions
+
+        return config
+
+
+    def _dirtyString(self, string):
         # only allow lowercase and underscore
         clean_string_verification = 'abcdefghijklmnopqrstuvwxyz_0123456789'
         clean_string = ''.join([x for x in string if x in clean_string_verification])
@@ -66,13 +82,13 @@ class ProjectSetup():
         return type_string
 
 
-    def _parser(self,config):
+    def _parser(self, json_config):
         parser = argparse.ArgumentParser(
             prog = 'scnprojectsetup',
             formatter_class = argparse.RawTextHelpFormatter,
             description = 'A sript that creates project folders based on a config file.',
-            usage = self.blue_print.format('%(prog)s name type destination\n' +\
-            'example: %(prog)s lhs03e01 ftr /Volumes/scn_ftr_04'))
+            usage = '%(prog)s name type destination\n' +\
+            'example: %(prog)s lhs03e01 ftr /Volumes/scn_ftr_04')
         parser.add_argument("name",help="Project name")
         parser.add_argument("type",help=(self._buildTypeString()))
         parser.add_argument("destination",help="Specify a destination folder"+\
@@ -81,7 +97,7 @@ class ProjectSetup():
         parser.add_argument("-v","--verbose",help='Increase output verbosity',
                             action="store_true")
         parser.add_argument("-c","--config",help='Specify a custom config file',
-                            default=config,
+                            default=json_config,
                             metavar='FILE')
         if len(sys.argv) == 4:
             args = parser.parse_args()
@@ -97,7 +113,7 @@ class ProjectSetup():
         return args
 
 
-    def _processArgs(self,args,project_types):
+    def _processArgs(self, args, project_types):
         project_type = args.type
         project_name = args.name
         verbose = args.verbose
@@ -139,29 +155,32 @@ class ProjectSetup():
         return destination
 
 
-    def _getProjectPaths(self,project_folders_cfg,path_type,path_root):
-        # load the config file
-        json_data = open(project_folders_cfg)
-        folder_cfg = json.load(json_data)
-        json_data.close()
-
-        # config file list definitions
-        pathstring = 0
+    def _getProjectPaths(self, path_type, path_root):
 
         # parse the config file
-        paths = folder_cfg['project']
-        paths.extend(folder_cfg[path_type])
+        paths = self.config['default']['folders']
+        paths.extend(self.config['project_types'][path_type]['folders'])
+        # omit folders as specified in config
+        omit = self.config['project_types'][path_type]['omit']
+        for item in omit:
+            while paths.count(item) > 0:
+                paths.remove(item)
 
+        # build type type subfolders
+        subfolder = self.config['project_types'][path_type]['subfolder']
 
         project_paths = []
         for path in paths:
-            project_paths.append(os.path.join(path_root,path_type,path[pathstring]))
+            if subfolder:
+                project_paths.append(os.path.join(path_root, path_type, path))
+            else:
+                project_paths.append(os.path.join(path_root, path))
 
         # return all paths to be created as a list of strings
         return project_paths
 
 
-    def _createProject(self,paths):
+    def _createProject(self, paths):
         for path in paths:
             try:
                 os.makedirs(path)
@@ -170,15 +189,15 @@ class ProjectSetup():
                 sys.exit("%s already exists.\nNo project folders created" % existing_folder)
 
 
-    def _touchProjectFile(self,destination):
-        project_file = os.path.join(destination,(self.args.name + '.txt'))
+    def _touchProjectFile(self, destination):
+        project_file = os.path.join(destination, ('_' + self.args.name + '.txt'))
         if not os.path.isfile(project_file):
             open(project_file, 'a').close()
 
         return project_file
 
 
-    def _pipeProjectInfo(self,project_file):
+    def _pipeProjectInfo(self, project_file):
         info_string = \
             'Name of project: %s' % self.args.name +\
             '\nProject path: %s' % self.destination +\
@@ -196,7 +215,6 @@ class ProjectSetup():
 
 
     def _duplicateProjectFile(self, project_file):
-        # TODO: duplicate project_file and prepend a '.'
         index = project_file.rfind('/')
         tech_file = project_file[:index+1] + '.' + project_file[index+1:]
         shutil.copy(project_file,tech_file)
