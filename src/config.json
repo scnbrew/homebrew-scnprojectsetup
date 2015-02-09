@@ -89,6 +89,8 @@
             "folders":[
                 "master/audio/",
                 "master/prores/",
+                "client_relations/",
+                "client_relations/from_client/",
                 "gfx/",
                 "gfx/to_flame/",
                 "online/render_from_flame",
@@ -112,9 +114,7 @@
                 "master/dpx/",
                 "master/qt/",
                 "master/subtitles/",
-                "offline/aaf/",
                 "offline/projects/",
-                "offline/xml/",
                 "online/archive/",
                 "online/gfx/",
                 "online/lut/",
