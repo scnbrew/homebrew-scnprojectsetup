@@ -93,7 +93,8 @@
                 "client_relations/from_client/",
                 "gfx/",
                 "gfx/to_flame/",
-                "online/render_from_flame",
+                "online/render_from_online",
+                "online/render_from_grade"
                 "stills/"
             ],
             "omit":[
