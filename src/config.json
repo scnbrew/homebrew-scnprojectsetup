@@ -94,7 +94,7 @@
                 "gfx/",
                 "gfx/to_flame/",
                 "online/render_from_online",
-                "online/render_from_grade"
+                "online/render_from_grade",
                 "stills/"
             ],
             "omit":[
