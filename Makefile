@@ -1,5 +1,5 @@
 NAME = scnprojectsetup
-VERSION = 1.4.2
+VERSION = 1.4.3
 MAINTAINER = Sebastian Antonsen <sebastian@stormstudios.no>
 
 BASE_DIR=dist
