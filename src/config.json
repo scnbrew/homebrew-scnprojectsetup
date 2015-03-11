@@ -131,5 +131,12 @@
             ],
         "subfolder":false
         }
+    },
+    "allowed_destinations":{
+        "scn_commercial":"/Volumes/scn_commercial/",
+        "scn_ftr_01":"/Volumes/scn_ftr_01/scn_ftr_01/",
+        "scn_ftr_02":"/Volumes/scn_ftr_02/scn_ftr_02/",
+        "scn_ftr_03":"/Volumes/scn_ftr_03/scn_ftr_03/",
+        "scn_ftr_04":"/Volumes/scn_ftr_04/scn_ftr_04/"
     }
 }
