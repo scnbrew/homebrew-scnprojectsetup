@@ -15,7 +15,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.4.6'
+        self.version = '1.5.0'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -154,6 +154,12 @@ class ProjectSetup():
         if verbose:
             print 'CONFIG FILE: %s' % args.config
 
+        # -------------------- #
+        # process destination
+        # -------------------- #
+        if not os.path.isdir(destination_root):
+            print "{0} does not exists. Project not created".format(destination_root)
+            sys.exit(0)
         destination = os.path.join(destination_root,project_name)
         if verbose:
             print 'DESTINATION DIR: %s' % destination
