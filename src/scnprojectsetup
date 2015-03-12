@@ -15,7 +15,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.4.4'
+        self.version = '1.4.5'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -129,8 +129,9 @@ class ProjectSetup():
                 project_type = int(project_type)
                 project_type = project_types[project_type]
             except:
-                sys.exit(args.type + ' is not a recognised project type' +\
-                             '\nRecognized types: %s' % ' '.join(self.project_types))
+                print args.type + ' is not a recognised project type' +\
+                    '\nRecognized types: %s' % ' '.join(self.project_types)
+                sys.exit(0)
         if verbose:
             print 'PROJECT TYPE: %s' % project_type
 
@@ -139,11 +140,13 @@ class ProjectSetup():
         # -------------------- #
         if self._dirtyString(project_name):
             if self._dirtyString(project_name) == 2:
-                sys.exit("Project name contains non-ascii characters." \
-                         "\nThis is not according to specification. Project creation cancelled.")
+                print("Project name contains non-ascii characters." \
+                      "\nThis is not according to specification. Project creation cancelled.")
+                sys.exit(0)
             else:
-                sys.exit("Project name contains UPPERCASE letters."\
-                         "\nThis is not according to specification. Project creation cancelled.")
+                print("Project name contains UPPERCASE letters."\
+                      "\nThis is not according to specification. Project creation cancelled.")
+                sys.exit(0)
 
         if verbose:
             print 'CONFIG FILE: %s' % args.config
@@ -186,7 +189,8 @@ class ProjectSetup():
                 os.makedirs(path)
             except OSError as e:
                 existing_folder = os.path.join(self.destination,self.args.type)
-                sys.exit("%s already exists.\nNo project folders created" % existing_folder)
+                print("%s already exists.\nNo project folders created" % existing_folder)
+                sys.exit(0)
 
 
     def _touchProjectFile(self, destination):
