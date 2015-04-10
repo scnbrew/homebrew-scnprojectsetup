@@ -15,7 +15,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.5.0'
+        self.version = '1.5.1'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -68,11 +68,13 @@ class ProjectSetup():
         # only allow lowercase and underscore
         clean_string_verification = 'abcdefghijklmnopqrstuvwxyz_0123456789'
         clean_string = ''.join([x for x in string if x in clean_string_verification])
-        # check for uppercase letters
-        if string.isupper() or not (string.isupper() or string.islower()):
-            return 1
+        # check for uppercase letters or only numbers
+        if string.isdigit():
+            return 1 # cannot be only numbers
+        elif string.isupper() or not (string.isupper() or string.islower()):
+            return 2 # must be only lowercase
         elif len(clean_string) != len(string):
-            return 2
+            return 3 # cannot contain symbols not included in clean_string_verification
         else:
             return False
 
@@ -142,13 +144,20 @@ class ProjectSetup():
         # process project_name
         # -------------------- #
         if self._dirtyString(project_name):
-            if self._dirtyString(project_name) == 2:
+            if self._dirtyString(project_name) == 1:
+                print("Project name cannot consist of purely numbers." \
+                      "\nThis is not according to specification. Project creating cancelled")
+                sys.exit(0)
+            elif self._dirtyString(project_name) == 2:
+                print("Project name contains UPPERCASE letters."\
+                      "\nThis is not according to specification. Project creation cancelled.")
+                sys.exit(0)
+            elif self._dirtyString(project_name) == 3:
                 print("Project name contains non-ascii characters." \
                       "\nThis is not according to specification. Project creation cancelled.")
                 sys.exit(0)
             else:
-                print("Project name contains UPPERCASE letters."\
-                      "\nThis is not according to specification. Project creation cancelled.")
+                print("Unexcpected error! Contact the it department!")
                 sys.exit(0)
 
         if verbose:
