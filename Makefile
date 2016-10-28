@@ -1,5 +1,5 @@
 NAME = scnprojectsetup
-VERSION = 1.5.1
+VERSION = 1.6.0
 MAINTAINER = Sebastian Antonsen <sebastian@stormstudios.no>
 
 BASE_DIR=dist
@@ -34,9 +34,9 @@ tar:
 	tar -zcvf $(BUILD_ROOT)/$(TAR_NAME).tar.gz $(SRC_DIR)
 	rm $(SRC_DIR)/Makefile
 
-brew:HASH=$(shell openssl sha1 $(BUILD_ROOT)/$(TAR_NAME).tar.gz | tail -c 41)
+brew:HASH=$(shell openssl dgst -sha256 $(BUILD_ROOT)/$(TAR_NAME).tar.gz | tail -c 65)
 brew:
-	sed -i.tmp "s/sha1.*/sha1 \"$(HASH)\"/g" $(NAME).rb
+	sed -i.tmp "s/sha256.*/sha256 \"$(HASH)\"/g" $(NAME).rb
 	sed -i.tmp "/url/s/scnprojectsetup_...../scnprojectsetup_$(VERSION)/g" $(NAME).rb
 	rm $(NAME).rb.tmp
 
