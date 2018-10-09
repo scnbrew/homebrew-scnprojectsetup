@@ -78,53 +78,6 @@
             "folders":[],
             "omit":[],
         "subfolder":true
-        },
-        "com": {
-            "description":"commercial",
-            "folders":[
-                "master/audio/",
-                "master/prores/",
-                "client_relations/",
-                "client_relations/from_client/",
-                "gfx/",
-                "gfx/to_flame/",
-                "online/render_from_online",
-                "online/render_from_grade",
-                "stills/"
-            ],
-            "omit":[
-                "_admin/",
-                "_source/",
-                "_source/dnxhd/",
-                "_source/dpx/",
-                "_source/inserts/",
-                "_source/prores/",
-                "_source/raw",
-                "audio/mst/",
-                "audio/wip/",
-                "grade/",
-                "grade/lut/",
-                "grade/projects/",
-                "grade/render/",
-                "master/dcp/",
-                "master/dpx/",
-                "master/qt/",
-                "master/subtitles/",
-                "offline/projects/",
-                "online/archive/",
-                "online/gfx/",
-                "online/lut/",
-                "online/projects/",
-                "online/render/",
-                "tmp/",
-                "tmp/client_relations/",
-                "vfx/comp/",
-                "vfx/grain/",
-                "vfx/grid/",
-                "vfx/overlay/",
-                "vfx/plates/"
-            ],
-        "subfolder":false
         }
     },
     "allowed_destinations":{
