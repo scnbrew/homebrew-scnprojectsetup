@@ -2,8 +2,8 @@ require "formula"
 
 class Scnprojectsetup < Formula
   homepage "http://shortcutolso.no"
-  url "https://github.com/scnbrew/homebrew-scnprojectsetup/raw/master/dist/scnprojectsetup_1.6.9/scnprojectsetup_1.6.9.tar.gz"
-  sha256 "e50ac1c9f8520731444d3538511a87ba8091bb58474f250ee79bb3eb102eaa82"
+  url "https://github.com/scnbrew/homebrew-scnprojectsetup/raw/master/dist/scnprojectsetup_1.7.0/scnprojectsetup_1.7.0.tar.gz"
+  sha256 "8fc6041267d1371200bfe17908259487962092225b5966cfd40fa6fae777eae7"
 
   def install
     # Remove unrecognized options if warned by configure

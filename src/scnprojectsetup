@@ -15,7 +15,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.6.9'
+        self.version = '1.7.0'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -91,13 +91,13 @@ class ProjectSetup():
         parser = argparse.ArgumentParser(
             prog = 'scnprojectsetup',
             formatter_class = argparse.RawTextHelpFormatter,
-            description = 'A sript that creates project folders based on a config file.',
+            description = 'An app that creates project folders based on a config file.',
             usage = '%(prog)s name type destination\n' +\
-            'example: %(prog)s lhs03e01 ftr /Volumes/scn_ftr_04')
+            'example: %(prog)s starwars ftr /Volumes/scn_ftr_04')
         parser.add_argument("name",help="Project name")
         parser.add_argument("type",help=(self._buildTypeString()))
         parser.add_argument("destination",help="Specify a destination folder"+\
-                            '\n[ Tip! You can drag`n`drop ]',
+                            '\n[ Tip! You can drag`n`drop destination folder from Finder ]',
                             metavar='destination')
         parser.add_argument("-v","--verbose",help='Increase output verbosity',
                             action="store_true")
@@ -157,7 +157,7 @@ class ProjectSetup():
                       "\nThis is not according to specification. Project creation cancelled.")
                 sys.exit(0)
             else:
-                print("Unexcpected error! Contact the it department!")
+                print("Unexcpected error! Contact the TECH department!")
                 sys.exit(0)
 
         if verbose:

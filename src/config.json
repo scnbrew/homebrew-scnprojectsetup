@@ -41,7 +41,7 @@
     },
     "project_types":{
         "ftr": {
-            "description":"Feature and long-form drama, etc",
+            "description":"Feature and long-form drama, etc.",
             "folders":[],
             "omit":[],
         "subfolder":true
@@ -65,13 +65,13 @@
         "subfolder":true
         },
         "tst": {
-          "description":"Test project, cam tests etc.",
+          "description":"Test project, camera tests, etc.",
           "folders":[],
           "omit":[],
         "subfolder":true
         },
         "adv": {
-            "description":"Advertisement and tv commercial",
+            "description":"Advertisement and tv commercial, etc.",
             "folders":[],
             "omit":[],
         "subfolder":true
