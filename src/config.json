@@ -4,11 +4,8 @@
         "folders":[
             "_admin/",
             "_source/",
-            "_source/dnxhd/",
-            "_source/dpx/",
             "_source/inserts/",
-            "_source/prores/",
-            "_source/raw",
+            "_source/main",
             "audio/",
             "audio/mst/",
             "audio/wip/",
@@ -19,9 +16,9 @@
             "grade/render/",
             "master/",
             "master/dcp/",
-            "master/dpx/",
+            "master/mst/",
             "master/projects/",
-            "master/qt/",
+            "master/deliver/",
             "master/subtitles/",
             "offline/",
             "offline/aaf/",
@@ -31,15 +28,13 @@
             "offline/ref/",
             "offline/xml/",
             "online/",
-            "online/archive/",
             "online/gfx/",
-            "online/lut/",
             "online/projects/",
             "online/render/",
             "tmp/",
-            "tmp/client_relations/",
             "vfx/",
             "vfx/comp/",
+            "vfx/_vfx_offline/",
             "vfx/grain/",
             "vfx/grid/",
             "vfx/overlay/",
@@ -50,30 +45,30 @@
     },
     "project_types":{
         "ftr": {
-            "description":"feature",
+            "description":"Feature, long form episodic drama",
             "folders":[],
             "omit":[],
         "subfolder":true
         },
         "shr": {
-            "description":"short",
+            "description":"Short",
             "folders":[],
             "omit":[],
         "subfolder":true
         },
         "tlr": {
-            "description":"trailer",
+            "description":"Trailer",
             "folders":[],
             "omit":[],
         "subfolder":true
         },
-        "tvc": {
-            "description":"tv commercial",
+        "adv": {
+            "description":"Advertisement, tv commercial, etc",
             "folders":[],
             "omit":[],
         "subfolder":true
         },
-        "prm": {
+        "pro": {
             "description":"promo",
             "folders":[],
             "omit":[],
@@ -85,53 +80,6 @@
             "omit":[],
         "subfolder":true
         },
-        "com": {
-            "description":"commercial",
-            "folders":[
-                "master/audio/",
-                "master/prores/",
-                "client_relations/",
-                "client_relations/from_client/",
-                "gfx/",
-                "gfx/to_flame/",
-                "online/render_from_online",
-                "online/render_from_grade",
-                "stills/"
-            ],
-            "omit":[
-                "_admin/",
-                "_source/",
-                "_source/dnxhd/",
-                "_source/dpx/",
-                "_source/inserts/",
-                "_source/prores/",
-                "_source/raw",
-                "audio/mst/",
-                "audio/wip/",
-                "grade/",
-                "grade/lut/",
-                "grade/projects/",
-                "grade/render/",
-                "master/dcp/",
-                "master/dpx/",
-                "master/qt/",
-                "master/subtitles/",
-                "offline/projects/",
-                "online/archive/",
-                "online/gfx/",
-                "online/lut/",
-                "online/projects/",
-                "online/render/",
-                "tmp/",
-                "tmp/client_relations/",
-                "vfx/comp/",
-                "vfx/grain/",
-                "vfx/grid/",
-                "vfx/overlay/",
-                "vfx/plates/"
-            ],
-        "subfolder":false
-        }
     },
     "allowed_destinations":{
         "scn_commercial":"/Volumes/scn_commercial/",
