@@ -1,5 +1,5 @@
 NAME = scnprojectsetup
-VERSION = 1.6.4
+VERSION = 1.6.5
 MAINTAINER = Pal Svennevig <pal@shortcutoslo.no>
 
 BASE_DIR=dist

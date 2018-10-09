@@ -44,7 +44,7 @@
     },
     "project_types":{
         "ftr": {
-            "description":"feature",
+            "description":"Feature and long-form drama, etc",
             "folders":[],
             "omit":[],
         "subfolder":true
