@@ -61,14 +61,14 @@
             "omit":[],
         "subfolder":true
         },
-        "tvc": {
-            "description":"tv commercial",
+        "adv": {
+            "description":"Advertisement and tv commercial",
             "folders":[],
             "omit":[],
         "subfolder":true
         },
-        "prm": {
-            "description":"promo",
+        "pro": {
+            "description":"Promo material",
             "folders":[],
             "omit":[],
         "subfolder":true
