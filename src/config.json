@@ -34,9 +34,6 @@
             "tmp/",
             "vfx/",
             "vfx/comp/",
-            "vfx/grain/",
-            "vfx/grid/",
-            "vfx/overlay/",
             "vfx/plates/"
         ],
         "omit":[],
@@ -50,15 +47,27 @@
         "subfolder":true
         },
         "shr": {
-            "description":"short",
+            "description":"Short",
             "folders":[],
             "omit":[],
         "subfolder":true
         },
         "tlr": {
-            "description":"trailer",
+            "description":"Trailer",
             "folders":[],
             "omit":[],
+        "subfolder":true
+        },
+        "tsr": {
+          "description":"Teaser",
+          "folders":[],
+          "omit":[],
+        "subfolder":true
+        },
+        "tst": {
+          "description":"Test project, cam tests etc.",
+          "folders":[],
+          "omit":[],
         "subfolder":true
         },
         "adv": {
@@ -74,7 +83,7 @@
         "subfolder":true
         },
         "epk": {
-            "description":"electronic press kit",
+            "description":"Electronic press kit",
             "folders":[],
             "omit":[],
         "subfolder":true
