@@ -1,6 +1,6 @@
 NAME = scnprojectsetup
-VERSION = 1.6.1
-MAINTAINER = Sebastian Antonsen <sebastian@stormstudios.no>
+VERSION = 1.6.3
+MAINTAINER = Pal Svennevig <pal@shortcutoslo.no>
 
 BASE_DIR=dist
 BUILD_ROOT=$(BASE_DIR)/$(NAME)_$(VERSION)
