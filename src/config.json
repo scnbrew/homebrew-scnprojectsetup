@@ -14,6 +14,7 @@
             "grade/lut/",
             "grade/projects/",
             "grade/render/",
+            "grade/galstills/",
             "master/",
             "master/dcp/",
             "master/mst/",
