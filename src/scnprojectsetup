@@ -228,7 +228,7 @@ class ProjectSetup():
             '\nCreator: %s@%s' %  (getpwuid(os.getuid()).pw_name, gethostname()) +\
             '\nCreation date: %s' % str(datetime.now())[:-7] +\
             '\n' +\
-            '\nUptime at creation time :%s'% check_output("uptime").decode('utf-8')+ \
+            '\nUptime at creation: %s'% check_output("uptime").decode('utf-8')+ \
             '\nMounted volumes at creation time:\n%s'% check_output(["df", "-h"]).decode('utf-8')+ \
             '\n\n==============================\n\n'
 
