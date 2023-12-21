@@ -1,6 +1,6 @@
 NAME = scnprojectsetup
-VERSION = 1.7.2
-MAINTAINER = Pal Svennevig <pal@shortcutoslo.no>
+VERSION = 1.8.0
+MAINTAINER = Pal Svennevig <pal@shortcutoslo.no> & Ole-Andrè Hestetun <ole@shortcutoslo.no>
 
 BASE_DIR=dist
 BUILD_ROOT=$(BASE_DIR)/$(NAME)_$(VERSION)

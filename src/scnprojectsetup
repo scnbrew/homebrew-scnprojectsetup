@@ -15,7 +15,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.7.2'
+        self.version = '1.8.0'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -42,7 +42,7 @@ class ProjectSetup():
         self._duplicateProjectFile(project_file)
 
         # return info that the project was succesfully created
-        print "{0} was succesfully created at {1}".format(self.args.name, self.args.destination)
+        print(f"{self.args.name} was succesfully created at {self.args.destination}")
 
 
     def _initConfig(self,json_config):
@@ -107,11 +107,11 @@ class ProjectSetup():
         if len(sys.argv) == 4:
             args = parser.parse_args()
         elif '-h' in sys.argv or '--help' in sys.argv:
-            print '\nVersion: ' + self.version
+            print('\nVersion: ' + self.version)
             args = parser.parse_args()
         else:
-            print '\nscnprojectsetup: ERROR: too few arguments\n'
-            print '\nVersion: ' + self.version
+            print('\nscnprojectsetup: ERROR: too few arguments\n')
+            print('\nVersion: ' + self.version)
             parser.print_help()
             sys.exit(0)
 
@@ -134,11 +134,11 @@ class ProjectSetup():
                 project_type = int(project_type)
                 project_type = project_types[project_type]
             except:
-                print args.type + ' is not a recognised project type' +\
-                    '\nRecognized types: %s' % ' '.join(self.project_types)
+                print(args.type + ' is not a recognised project type' +\
+                    '\nRecognized types: %s' % ' ').join(self.project_types)
                 sys.exit(0)
         if verbose:
-            print 'PROJECT TYPE: %s' % project_type
+            print('PROJECT TYPE: %s' % project_type)
 
         # -------------------- #
         # process project_name
@@ -161,17 +161,17 @@ class ProjectSetup():
                 sys.exit(0)
 
         if verbose:
-            print 'CONFIG FILE: %s' % args.config
+            print('CONFIG FILE: %s' % args.config)
 
         # -------------------- #
         # process destination
         # -------------------- #
         if not os.path.isdir(destination_root):
-            print "{0} does not exists. Project not created".format(destination_root)
+            print("f{0} does not exists. Project not created").format(destination_root)
             sys.exit(0)
         destination = os.path.join(destination_root,project_name)
         if verbose:
-            print 'DESTINATION DIR: %s' % destination
+            print('DESTINATION DIR: %s' % destination)
 
         return destination
 
@@ -228,8 +228,8 @@ class ProjectSetup():
             '\nCreator: %s@%s' %  (getpwuid(os.getuid()).pw_name, gethostname()) +\
             '\nCreation date: %s' % str(datetime.now())[:-7] +\
             '\n' +\
-            '\nUptime at creation: %s' % str(check_output("uptime")) +\
-            '\nMounted volumes at creation time:\n%s' % str(check_output(["df","-h"])) +\
+            '\nUptime at creation: %s'% check_output("uptime").decode('utf-8')+ \
+            '\nMounted volumes at creation time:\n%s'% check_output(["df", "-h"]).decode('utf-8')+ \
             '\n\n==============================\n\n'
 
         with open(project_file, 'a') as project_file:
