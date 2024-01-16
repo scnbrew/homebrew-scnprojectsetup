@@ -15,7 +15,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.8.0'
+        self.version = '1.8.1'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
