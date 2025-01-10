@@ -15,7 +15,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.8.1'
+        self.version = '1.8.2'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -30,8 +30,8 @@ class ProjectSetup():
         self.args = self._parser(json_config)
 
         # process the arguments
-        self.destination = self._processArgs(self.args, self.project_types)
-        self.paths = self._getProjectPaths(self.args.type, self.destination)
+        self.destination, self.project_type, self.original_type = self._processArgs(self.args, self.project_types)
+        self.paths = self._getProjectPaths(self.original_type, self.destination)
 
         # create the project as specified
         self._createProject(self.paths)
@@ -123,20 +123,28 @@ class ProjectSetup():
         project_name = args.name
         verbose = args.verbose
         destination_root = args.destination
-
+        
         # -------------------- #
         # process project_type
         # -------------------- #
-        if project_type in project_types:
-            project_type = project_type
-        else:
-            try:
-                project_type = int(project_type)
-                project_type = project_types[project_type]
-            except:
-                print(args.type + ' is not a recognised project type' +\
-                    '\nRecognized types: %s' % ' ').join(self.project_types)
+        # Store original type for folder creation
+        original_type = project_type
+        # Strip numbers for config lookup
+        base_type = ''.join([i for i in project_type if not i.isdigit()])
+        
+        if base_type in project_types:
+            # Check if numbered suffix is valid (max 2 digits)
+            if len(project_type) - len(base_type) <= 2:
+                project_type = base_type  # Use base type for config
+            else:
+                print(f"{args.type} is not a recognised project type (number too long, max 2 digits)")
+                print(f"Recognized types: {' '.join(project_types)}")
                 sys.exit(0)
+        else:
+            print(f"{args.type} is not a recognised project type")
+            print(f"Recognized types: {' '.join(project_types)}")
+            sys.exit(0)
+
         if verbose:
             print('PROJECT TYPE: %s' % project_type)
 
@@ -173,22 +181,25 @@ class ProjectSetup():
         if verbose:
             print('DESTINATION DIR: %s' % destination)
 
-        return destination
+        return destination, project_type, original_type
 
 
     def _getProjectPaths(self, path_type, path_root):
-
         # parse the config file
         paths = self.config['default']['folders']
-        paths.extend(self.config['project_types'][path_type]['folders'])
+        
+        # Use base project type (without numbers) for config lookup
+        base_type = ''.join([i for i in path_type if not i.isdigit()])
+        paths.extend(self.config['project_types'][base_type]['folders'])
+        
         # omit folders as specified in config
-        omit = self.config['project_types'][path_type]['omit']
+        omit = self.config['project_types'][base_type]['omit']
         for item in omit:
             while paths.count(item) > 0:
                 paths.remove(item)
 
-        # build type type subfolders
-        subfolder = self.config['project_types'][path_type]['subfolder']
+        # build type type subfolders using original type (with numbers)
+        subfolder = self.config['project_types'][base_type]['subfolder']
 
         project_paths = []
         for path in paths:
