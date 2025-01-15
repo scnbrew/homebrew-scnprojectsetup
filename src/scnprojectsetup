@@ -15,7 +15,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.8.2'
+        self.version = '1.9.0'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -41,9 +41,8 @@ class ProjectSetup():
         self._pipeProjectInfo(project_file)
         self._duplicateProjectFile(project_file)
 
-        # return info that the project was succesfully created
-        print(f"{self.args.name} was succesfully created at {self.args.destination}")
-
+        # return info that the project was successfully created
+        print(f"{self.args.type} in {self.args.name} was successfully created at {self.args.destination}")
 
     def _initConfig(self,json_config):
         # load the json file into memory as a dictionary
@@ -66,7 +65,7 @@ class ProjectSetup():
 
     def _dirtyString(self, string):
         # only allow lowercase and underscore
-        clean_string_verification = 'abcdefghijklmnopqrstuvwxyz_0123456789'
+        clean_string_verification = 'abcdefghijklmnopqrstuvwxyz_-0123456789'
         clean_string = ''.join([x for x in string if x in clean_string_verification])
         # check for uppercase letters or only numbers
         if string.isdigit():
@@ -183,24 +182,22 @@ class ProjectSetup():
 
         return destination, project_type, original_type
 
-
     def _getProjectPaths(self, path_type, path_root):
-        # parse the config file
+        # Parse base paths from config
         paths = self.config['default']['folders']
-        
-        # Use base project type (without numbers) for config lookup
+
+        # Use base project type for config lookup
         base_type = ''.join([i for i in path_type if not i.isdigit()])
         paths.extend(self.config['project_types'][base_type]['folders'])
-        
-        # omit folders as specified in config
+
+        # Omit specified folders from config
         omit = self.config['project_types'][base_type]['omit']
         for item in omit:
-            while paths.count(item) > 0:
+            while item in paths:
                 paths.remove(item)
 
-        # build type type subfolders using original type (with numbers)
+        # Handle subfolders for project types
         subfolder = self.config['project_types'][base_type]['subfolder']
-
         project_paths = []
         for path in paths:
             if subfolder:
@@ -208,18 +205,43 @@ class ProjectSetup():
             else:
                 project_paths.append(os.path.join(path_root, path))
 
-        # return all paths to be created as a list of strings
+        # -------------------------------
+        # Add dynamic folders from config.json (replace placeholders)
+        # -------------------------------
+
+        # Retrieve default dynamic folders
+        dynamic_folders = self.config['default'].get('dynamic_folders', [])
+
+        # Retrieve type-specific dynamic folders (optional override)
+        type_dynamic_folders = self.config['project_types'][base_type].get('dynamic_folders', [])
+
+        # Combine both default and type-specific dynamic folders
+        dynamic_folders.extend(type_dynamic_folders)
+
+        # Replace placeholders in dynamic folder names and add them to project paths
+        for template in dynamic_folders:
+            dynamic_folder = template.format(name=self.args.name, type=self.args.type)
+            project_paths.append(os.path.join(path_root, path_type, dynamic_folder))
+
+        # Return all paths to be created as a list of strings
         return project_paths
 
-
     def _createProject(self, paths):
+        # Get the top-level folder based on the project destination and type
+        top_level_folder = os.path.join(self.destination, self.args.type)
+
+        # Check if the top-level project+type folder already exists
+        if os.path.exists(top_level_folder):
+            print(f"{top_level_folder} already exists.\nNo project folders created")
+            sys.exit(0)
+
+        # If the top-level folder does not exist, proceed to create the entire folder structure
         for path in paths:
             try:
                 os.makedirs(path)
             except OSError as e:
-                existing_folder = os.path.join(self.destination,self.args.type)
-                print("%s already exists.\nNo project folders created" % existing_folder)
-                sys.exit(0)
+                print(f"Error: Unable to create folder {path} due to {e}.")
+                sys.exit(1)
 
 
     def _touchProjectFile(self, destination):

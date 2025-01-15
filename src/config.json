@@ -1,7 +1,7 @@
 {
     "default": {
-        "description":"n/a",
-        "folders":[
+        "description": "n/a",
+        "folders": [
             "_admin/",
             "_source/",
             "_reference",
@@ -37,76 +37,73 @@
             "vfx/comp/",
             "vfx/plates/"
         ],
-        "omit":[],
-        "subfolder":true
+        "dynamic_folders": [
+            "audio/mst/{name}_{type}_24fps",
+            "audio/mst/{name}_{type}_25fps"
+        ],
+        "omit": [],
+        "subfolder": true
     },
-    "project_types":{
+    "project_types": {
         "ftr": {
-            "description":"Feature and long-form drama, etc.",
-            "folders":[],
-            "omit":[],
-        "subfolder":true
+            "description": "Feature and long-form drama, etc.",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         },
         "shr": {
-            "description":"Short",
-            "folders":[],
-            "omit":[],
-        "subfolder":true
+            "description": "Short",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         },
         "tlr": {
-            "description":"Trailer",
-            "folders":[],
-            "omit":[],
-        "subfolder":true
+            "description": "Trailer",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         },
         "tsr": {
-          "description":"Teaser",
-          "folders":[],
-          "omit":[],
-        "subfolder":true
+            "description": "Teaser",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         },
         "tst": {
-          "description":"Test project, camera tests, etc.",
-          "folders":[],
-          "omit":[],
-        "subfolder":true
+            "description": "Test project, camera tests, etc.",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         },
         "adv": {
-            "description":"Advertisement and tv commercial, etc.",
-            "folders":[],
-            "omit":[],
-        "subfolder":true
+            "description": "Advertisement and tv commercial, etc.",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         },
         "pro": {
-            "description":"Promo material",
-            "folders":[],
-            "omit":[],
-        "subfolder":true
+            "description": "Promo material",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         },
         "epk": {
-            "description":"Electronic press kit",
-            "folders":[],
-            "omit":[],
-        "subfolder":true
+            "description": "Electronic press kit",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         },
         "some": {
-            "description":"Social Media",
-            "folders":[],
-            "omit":[],
-        "subfolder":true
+            "description": "Social Media",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         },
         "sizzle": {
-            "description":"Sizzle Reel",
-            "folders":[],
-            "omit":[],
-        "subfolder":true
+            "description": "Sizzle Reel",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         }
-    },
-    "allowed_destinations":{
-        "scn_commercial":"/Volumes/scn_commercial/",
-        "scn_ftr_01":"/Volumes/scn_ftr_01/scn_ftr_01/",
-        "scn_ftr_02":"/Volumes/scn_ftr_02/scn_ftr_02/",
-        "scn_ftr_03":"/Volumes/scn_ftr_03/scn_ftr_03/",
-        "scn_ftr_04":"/Volumes/scn_ftr_04/scn_ftr_04/"
     }
 }
