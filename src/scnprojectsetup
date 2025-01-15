@@ -15,7 +15,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.8.3'
+        self.version = '1.9.0'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -182,24 +182,22 @@ class ProjectSetup():
 
         return destination, project_type, original_type
 
-
     def _getProjectPaths(self, path_type, path_root):
-        # parse the config file
+        # Parse base paths from config
         paths = self.config['default']['folders']
-        
-        # Use base project type (without numbers) for config lookup
+
+        # Use base project type for config lookup
         base_type = ''.join([i for i in path_type if not i.isdigit()])
         paths.extend(self.config['project_types'][base_type]['folders'])
-        
-        # omit folders as specified in config
+
+        # Omit specified folders from config
         omit = self.config['project_types'][base_type]['omit']
         for item in omit:
-            while paths.count(item) > 0:
+            while item in paths:
                 paths.remove(item)
 
-        # build type type subfolders using original type (with numbers)
+        # Handle subfolders for project types
         subfolder = self.config['project_types'][base_type]['subfolder']
-
         project_paths = []
         for path in paths:
             if subfolder:
@@ -207,9 +205,26 @@ class ProjectSetup():
             else:
                 project_paths.append(os.path.join(path_root, path))
 
-        # return all paths to be created as a list of strings
-        return project_paths
+        # -------------------------------
+        # Add dynamic folders from config.json (replace placeholders)
+        # -------------------------------
 
+        # Retrieve default dynamic folders
+        dynamic_folders = self.config['default'].get('dynamic_folders', [])
+
+        # Retrieve type-specific dynamic folders (optional override)
+        type_dynamic_folders = self.config['project_types'][base_type].get('dynamic_folders', [])
+
+        # Combine both default and type-specific dynamic folders
+        dynamic_folders.extend(type_dynamic_folders)
+
+        # Replace placeholders in dynamic folder names and add them to project paths
+        for template in dynamic_folders:
+            dynamic_folder = template.format(name=self.args.name, type=self.args.type)
+            project_paths.append(os.path.join(path_root, path_type, dynamic_folder))
+
+        # Return all paths to be created as a list of strings
+        return project_paths
 
     def _createProject(self, paths):
         # Get the top-level folder based on the project destination and type
