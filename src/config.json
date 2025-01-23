@@ -38,8 +38,8 @@
             "vfx/plates/"
         ],
         "dynamic_folders": [
-            "audio/mst/{name}_{type}_24fps",
-            "audio/mst/{name}_{type}_25fps"
+            "audio/mst/{name}_{type}_audio_24fps",
+            "audio/mst/{name}_{type}_audio_25fps"
         ],
         "omit": [],
         "subfolder": true
