@@ -38,15 +38,15 @@
             "vfx/plates/"
         ],
         "dynamic_folders": [
-            "audio/mst/{name}_{type}_audio_24fps",
-            "audio/mst/{name}_{type}_audio_25fps"
+            "audio/mst/{name}_audio_24fps",
+            "audio/mst/{name}_audio_25fps"
         ],
         "omit": [],
         "subfolder": true
     },
     "project_types": {
         "ftr": {
-            "description": "Feature and long-form drama, etc.",
+            "description": "Feature",
             "folders": [],
             "omit": [],
             "subfolder": true
@@ -105,5 +105,12 @@
             "omit": [],
             "subfolder": true
         }
+            ,
+            "eps": {
+                "description": "Episodic (TV series, multiple episodes)",
+                "folders": [],
+                "omit": [],
+                "subfolder": true
+            }
     }
 }
