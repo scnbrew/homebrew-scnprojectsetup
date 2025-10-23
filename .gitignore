@@ -6,3 +6,12 @@
 .DS_Store
 build/
 .vscode
+/.idea/.gitignore
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/scnprojectsetup.iml
+/.idea/vcs.xml
+.github/copilot-instructions.md
+.github/chatmodes/4.1-Beast.chatmode.md
+.github/chatmodes/software-engineer-agent-v1.chatmode.md

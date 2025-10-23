@@ -15,7 +15,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.9.1'
+        self.version = '1.9.2'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -29,12 +29,47 @@ class ProjectSetup():
         self.config = self._initConfig(json_config)
         self.args = self._parser(json_config)
 
+        # Episodic support: prompt for season/episode if type is 'eps'
+        self.season = None
+        self.episode_count = None
+        if self.args.type == 'eps':
+            try:
+                self.season = int(input('Enter season number (e.g., 1): ').strip())
+                self.episode_count = int(input('Enter number of episodes: ').strip())
+                if self.season < 1 or self.episode_count < 1:
+                    raise ValueError
+            except Exception:
+                print('Invalid season or episode count. Project creation cancelled.')
+                sys.exit(1)
+
         # process the arguments
         self.destination, self.project_type, self.original_type = self._processArgs(self.args, self.project_types)
-        self.paths = self._getProjectPaths(self.original_type, self.destination)
+        if self.args.type == 'eps':
+            self.paths = self._getEpisodicProjectPaths(self.destination, self.args.name, self.season, self.episode_count)
+        else:
+            self.paths = self._getProjectPaths(self.original_type, self.destination)
 
         # create the project as specified
         self._createProject(self.paths)
+    def _getEpisodicProjectPaths(self, destination, series_name, season, episode_count):
+        # Get base folders from config
+        base_paths = self.config['default']['folders'][:]
+        # Add dynamic folders
+        dynamic_folders = self.config['default'].get('dynamic_folders', [])
+        base_paths += [df.format(name=series_name, type='eps') for df in dynamic_folders]
+
+        # Generate episode folder names
+        episode_folders = []
+        for ep in range(1, episode_count + 1):
+            ep_folder = f"{series_name}_s{season:02d}e{ep:02d}"
+            episode_folders.append(ep_folder)
+
+        # For each episode, nest all base folders inside
+        project_paths = []
+        for ep_folder in episode_folders:
+            for base in base_paths:
+                project_paths.append(os.path.join(destination, ep_folder, base))
+        return project_paths
 
         # create log files.
         project_file = self._touchProjectFile(self.destination)
@@ -227,15 +262,30 @@ class ProjectSetup():
         return project_paths
 
     def _createProject(self, paths):
-        # Get the top-level folder based on the project destination and type
-        top_level_folder = os.path.join(self.destination, self.args.type)
+        if self.args.type == 'eps':
+            # For episodic, check if any episode folder already exists (direct children of series folder)
+            episode_folders = set()
+            for path in paths:
+                # episode folder is always .../{series_folder}/{episode_folder}/...
+                parts = path.split(os.sep)
+                # Find the index of the series folder (destination)
+                try:
+                    dest_index = parts.index(os.path.basename(self.destination))
+                    episode_folder = os.sep.join(parts[:dest_index+2])
+                    episode_folders.add(episode_folder)
+                except ValueError:
+                    continue
+            for folder in episode_folders:
+                if os.path.exists(folder):
+                    print(f"{folder} already exists.\nNo project folders created")
+                    sys.exit(0)
+        else:
+            top_level_folder = os.path.join(self.destination, self.args.type)
+            if os.path.exists(top_level_folder):
+                print(f"{top_level_folder} already exists.\nNo project folders created")
+                sys.exit(0)
 
-        # Check if the top-level project+type folder already exists
-        if os.path.exists(top_level_folder):
-            print(f"{top_level_folder} already exists.\nNo project folders created")
-            sys.exit(0)
-
-        # If the top-level folder does not exist, proceed to create the entire folder structure
+        # If the relevant folders do not exist, proceed to create the entire folder structure
         for path in paths:
             try:
                 os.makedirs(path)
