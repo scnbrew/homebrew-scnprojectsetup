@@ -5,17 +5,33 @@ import os
 import argparse
 import json
 import shutil
+import re
 
 from socket import gethostname
 from pwd import getpwuid
 from datetime import datetime
 from subprocess import check_output
 
+ASCII_ERROR_BANNER = r"""   ______    ______   __    __        _______                                                     __       ______              __                         
+ /      \  /      \ |  \  |  \      |       \                                                   |  \     /      \            |  \                        
+|  $$$$$$\|  $$$$$$\| $$\ | $$      | $$$$$$$\  ______    ______       __   ______    _______  _| $$_   |  $$$$$$\  ______  _| $$_    __    __   ______  
+| $$___\$$| $$   \$$| $$$\| $$      | $$__/ $$ /      \  /      \     |  \ /      \  /       \|   $$ \  | $$___\$$ /      \|   $$ \  |  \  |  \ /      \ 
+ \$$    \ | $$      | $$$$\ $$      | $$    $$|  $$$$$$\|  $$$$$$\     \$$|  $$$$$$\|  $$$$$$$ \$$$$$$   \$$    \ |  $$$$$$\\$$$$$$  | $$  | $$|  $$$$$$\
+ _\$$$$$$\| $$   __ | $$\$$ $$      | $$$$$$$ | $$   \$$| $$  | $$    |  \| $$    $$| $$        | $$ __  _\$$$$$$\| $$    $$ | $$ __ | $$  | $$| $$  | $$
+|  \__| $$| $$__/  \| $$ \$$$$      | $$      | $$      | $$__/ $$    | $$| $$$$$$$$| $$_____   | $$|  \|  \__| $$| $$$$$$$$ | $$|  \| $$__/ $$| $$__/ $$
+ \$$    $$ \$$    $$| $$  \$$$      | $$      | $$       \$$    $$    | $$ \$$     \ \$$     \   \$$  $$ \$$    $$ \$$     \  \$$  $$ \$$    $$| $$    $$
+  \$$$$$$   \$$$$$$  \$$   \$$       \$$       \$$        \$$$$$$__   | $$  \$$$$$$$  \$$$$$$$    \$$$$   \$$$$$$   \$$$$$$$   \$$$$   \$$$$$$ | $$$$$$$ 
+                                                                |  \__/ $$                                                                     | $$      
+                                                                 \$$    $$                                                                     | $$      
+                                                                  \$$$$$$                                                                       \$$      
+                                                                 \$$$$$$                                                                       \$$                                                            
+"""
+
 class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.9.2'
+        self.version = '1.9.3'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -38,52 +54,77 @@ class ProjectSetup():
                 self.episode_count = int(input('Enter number of episodes: ').strip())
                 if self.season < 1 or self.episode_count < 1:
                     raise ValueError
+                if self.episode_count > 100:
+                    print('Take a walk Pål. This is too much...')
+                    sys.exit(1)
             except Exception:
                 print('Invalid season or episode count. Project creation cancelled.')
                 sys.exit(1)
 
+        # Derive a consistent project folder name that can be reused across project types
+        self.original_project_name = self.args.name
+        self.series_base_name = self.original_project_name
+        if self.args.type == 'eps' and self.season is not None:
+            suffix_match = re.match(r'^(?P<base>.+)_s(?P<season>\d{2})$', self.original_project_name)
+            if suffix_match:
+                inferred_base = suffix_match.group('base')
+                inferred_season = int(suffix_match.group('season'))
+                if inferred_season != self.season:
+                    print('Season number conflict between project name and input. Project creation cancelled.')
+                    sys.exit(1)
+                self.series_base_name = inferred_base
+            else:
+                self.series_base_name = self.original_project_name
+            self.project_folder_name = f"{self.series_base_name}_s{self.season:02d}"
+        else:
+            self.project_folder_name = self.original_project_name
+
         # process the arguments
         self.destination, self.project_type, self.original_type = self._processArgs(self.args, self.project_types)
         if self.args.type == 'eps':
-            self.paths = self._getEpisodicProjectPaths(self.destination, self.args.name, self.season, self.episode_count)
+            destination_root = os.path.dirname(self.destination)
+            self.destination = os.path.join(destination_root, self.project_folder_name)
+            self.paths = self._getEpisodicProjectPaths(self.destination, self.series_base_name, self.season, self.episode_count)
         else:
             self.paths = self._getProjectPaths(self.original_type, self.destination)
 
         # create the project as specified
         self._createProject(self.paths)
-    def _getEpisodicProjectPaths(self, destination, series_name, season, episode_count):
-        # Get base folders from config
-        base_paths = self.config['default']['folders'][:]
-        # Add dynamic folders
-        dynamic_folders = self.config['default'].get('dynamic_folders', [])
-        base_paths += [df.format(name=series_name, type='eps') for df in dynamic_folders]
 
-        # Generate episode folder names
-        episode_folders = []
-        for ep in range(1, episode_count + 1):
-            ep_folder = f"{series_name}_s{season:02d}e{ep:02d}"
-            episode_folders.append(ep_folder)
-
-        # For each episode, nest all base folders inside
-        project_paths = []
-        for ep_folder in episode_folders:
-            for base in base_paths:
-                project_paths.append(os.path.join(destination, ep_folder, base))
-        return project_paths
-
-        # create log files.
+        # Always create log files after folder creation
         project_file = self._touchProjectFile(self.destination)
         self._pipeProjectInfo(project_file)
         self._duplicateProjectFile(project_file)
 
         # return info that the project was successfully created
-        print(f"{self.args.type} in {self.args.name} was successfully created at {self.args.destination}")
+        print(f"{self.args.type} project '{self.project_folder_name}' was successfully created at {self.destination}")
+
+    def _getEpisodicProjectPaths(self, destination, series_name, season, episode_count):
+        base_paths, dynamic_folders, _ = self._collectFolderTemplates('eps')
+        formatted_paths = base_paths + [df.format(name=self.project_folder_name, type='eps') for df in dynamic_folders]
+        formatted_paths = self._unique(formatted_paths)
+
+        season_root = destination  # For episodic projects, destination already points at the season folder
+        project_paths = [season_root]
+
+        for ep in range(1, episode_count + 1):
+            episode_folder = f"{series_name}_s{season:02d}e{ep:02d}"
+            episode_root = os.path.join(season_root, episode_folder)
+            project_paths.append(episode_root)
+            for base in formatted_paths:
+                project_paths.append(os.path.join(episode_root, base))
+
+        common_root = os.path.join(season_root, '_common')
+        project_paths.append(common_root)
+        for base in formatted_paths:
+            project_paths.append(os.path.join(common_root, base))
+
+        return project_paths
 
     def _initConfig(self,json_config):
         # load the json file into memory as a dictionary
-        json_data = open(json_config)
-        config = json.load(json_data)
-        json_data.close()
+        with open(json_config, 'r', encoding='utf-8') as json_data:
+            config = json.load(json_data)
 
         # get all the project types and descriptions
         project_types = sorted(config['project_types'].keys())
@@ -144,6 +185,7 @@ class ProjectSetup():
             print('\nVersion: ' + self.version)
             args = parser.parse_args()
         else:
+            print(ASCII_ERROR_BANNER)
             print('\nscnprojectsetup: ERROR: too few arguments\n')
             print('\nVersion: ' + self.version)
             parser.print_help()
@@ -185,22 +227,20 @@ class ProjectSetup():
         # -------------------- #
         # process project_name
         # -------------------- #
-        if self._dirtyString(project_name):
-            if self._dirtyString(project_name) == 1:
+        dirty_code = self._dirtyString(project_name)
+        if dirty_code:
+            if dirty_code == 1:
                 print("Project name cannot consist of purely numbers." \
                       "\nThis is not according to specification. Project creating cancelled")
-                sys.exit(0)
-            elif self._dirtyString(project_name) == 2:
+            elif dirty_code == 2:
                 print("Project name contains UPPERCASE letters."\
                       "\nThis is not according to specification. Project creation cancelled.")
-                sys.exit(0)
-            elif self._dirtyString(project_name) == 3:
+            elif dirty_code == 3:
                 print("Project name contains non-ascii characters." \
                       "\nThis is not according to specification. Project creation cancelled.")
-                sys.exit(0)
             else:
-                print("Unexcpected error! Contact the TECH department!")
-                sys.exit(0)
+                print("Unexpected error! Contact the TECH department!")
+            sys.exit(0)
 
         if verbose:
             print('CONFIG FILE: %s' % args.config)
@@ -209,7 +249,7 @@ class ProjectSetup():
         # process destination
         # -------------------- #
         if not os.path.isdir(destination_root):
-            print("f{0} does not exists. Project not created").format(destination_root)
+            print(f"{destination_root} does not exist. Project not created")
             sys.exit(0)
         destination = os.path.join(destination_root,project_name)
         if verbose:
@@ -217,52 +257,52 @@ class ProjectSetup():
 
         return destination, project_type, original_type
 
+    def _collectFolderTemplates(self, base_type):
+        """Return base and dynamic folder templates for a given project type."""
+        type_config = self.config['project_types'].get(base_type, {})
+
+        base_paths = list(self.config['default'].get('folders', []))
+        base_paths.extend(type_config.get('folders', []))
+
+        omit = set(type_config.get('omit', []))
+        base_paths = [path for path in base_paths if path not in omit]
+
+        dynamic_folders = list(self.config['default'].get('dynamic_folders', []))
+        dynamic_folders.extend(type_config.get('dynamic_folders', []))
+
+        return self._unique(base_paths), dynamic_folders, bool(type_config.get('subfolder'))
+
+    @staticmethod
+    def _unique(sequence):
+        seen = set()
+        result = []
+        for item in sequence:
+            if item not in seen:
+                seen.add(item)
+                result.append(item)
+        return result
+
     def _getProjectPaths(self, path_type, path_root):
-        # Parse base paths from config
-        paths = self.config['default']['folders']
-
-        # Use base project type for config lookup
         base_type = ''.join([i for i in path_type if not i.isdigit()])
-        paths.extend(self.config['project_types'][base_type]['folders'])
+        base_paths, dynamic_folders, subfolder = self._collectFolderTemplates(base_type)
 
-        # Omit specified folders from config
-        omit = self.config['project_types'][base_type]['omit']
-        for item in omit:
-            while item in paths:
-                paths.remove(item)
-
-        # Handle subfolders for project types
-        subfolder = self.config['project_types'][base_type]['subfolder']
         project_paths = []
-        for path in paths:
-            if subfolder:
-                project_paths.append(os.path.join(path_root, path_type, path))
-            else:
-                project_paths.append(os.path.join(path_root, path))
+        base_root = os.path.join(path_root, path_type) if subfolder else path_root
 
-        # -------------------------------
-        # Add dynamic folders from config.json (replace placeholders)
-        # -------------------------------
+        for path in base_paths:
+            project_paths.append(os.path.join(base_root, path))
 
-        # Retrieve default dynamic folders
-        dynamic_folders = self.config['default'].get('dynamic_folders', [])
-
-        # Retrieve type-specific dynamic folders (optional override)
-        type_dynamic_folders = self.config['project_types'][base_type].get('dynamic_folders', [])
-
-        # Combine both default and type-specific dynamic folders
-        dynamic_folders.extend(type_dynamic_folders)
-
-        # Replace placeholders in dynamic folder names and add them to project paths
         for template in dynamic_folders:
-            dynamic_folder = template.format(name=self.args.name, type=self.args.type)
-            project_paths.append(os.path.join(path_root, path_type, dynamic_folder))
+            dynamic_folder = template.format(name=self.project_folder_name, type=self.args.type)
+            project_paths.append(os.path.join(base_root, dynamic_folder))
 
-        # Return all paths to be created as a list of strings
         return project_paths
 
     def _createProject(self, paths):
         if self.args.type == 'eps':
+            if os.path.exists(self.destination):
+                print(f"{self.destination} already exists.\nNo project folders created")
+                sys.exit(0)
             # For episodic, check if any episode folder already exists (direct children of series folder)
             episode_folders = set()
             for path in paths:
@@ -295,7 +335,7 @@ class ProjectSetup():
 
 
     def _touchProjectFile(self, destination):
-        project_file = os.path.join(destination, ('_' + self.args.name + '.txt'))
+        project_file = os.path.join(destination, ('_' + self.project_folder_name + '.txt'))
         if not os.path.isfile(project_file):
             open(project_file, 'a').close()
 
@@ -304,7 +344,7 @@ class ProjectSetup():
 
     def _pipeProjectInfo(self, project_file):
         info_string = \
-            'Name of project: %s' % self.args.name +\
+            'Name of project: %s' % self.project_folder_name +\
             '\nProject path: %s' % self.destination +\
             '\nProject type: %s' % self.args.type +\
             '\nCreated with: scnprojectsetup %s' % self.version +\
@@ -315,14 +355,21 @@ class ProjectSetup():
             '\nMounted volumes at creation time:\n%s'% check_output(["df", "-h"]).decode('utf-8')+ \
             '\n\n==============================\n\n'
 
-        with open(project_file, 'a') as project_file:
-            project_file.write(info_string)
+        targets = [project_file, self._getHiddenProjectFile(project_file)]
+        for path in targets:
+            with open(path, 'a') as handle:
+                handle.write(info_string)
 
 
     def _duplicateProjectFile(self, project_file):
+        hidden_file = self._getHiddenProjectFile(project_file)
+        if not os.path.isfile(hidden_file) and os.path.isfile(project_file):
+            shutil.copy(project_file, hidden_file)
+
+
+    def _getHiddenProjectFile(self, project_file):
         index = project_file.rfind('/')
-        tech_file = project_file[:index+1] + '.' + project_file[index+1:]
-        shutil.copy(project_file,tech_file)
+        return project_file[:index+1] + '.' + project_file[index+1:]
 
 
 if __name__ == '__main__':
