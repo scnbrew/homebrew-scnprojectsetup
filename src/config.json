@@ -48,7 +48,6 @@
         "edit": {
             "description": "Editorial Project",
             "folders": [
-                "Avid MediaFiles/MXF/1",
                 "delivery/dailies",
                 "delivery/locked_delivery/ep00_yymmdd_picturelock",
                 "delivery/non-lock_delivery/220125_paasyn_ep01",
@@ -62,8 +61,7 @@
                 "editorial/media/soundly audio/usr01",
                 "editorial/media/soundly audio/usr02",
                 "editorial/project",
-                "editorial/tmp",
-                "Unity Attic"
+                "editorial/tmp"
             ],
             "omit": [],
             "subfolder": false

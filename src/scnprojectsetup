@@ -31,7 +31,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.9.4'
+        self.version = '1.9.5'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -275,8 +275,8 @@ class ProjectSetup():
         type_config = self.config['project_types'].get(base_type, {})
 
         if base_type == 'edit':
-            base_paths = []
-            dynamic_folders = []
+            base_paths = list(self.config['project_types']['edit'].get('folders', []))
+            dynamic_folders = list(self.config['project_types']['edit'].get('dynamic_folders', []))
         else:
             base_paths = list(self.config['default'].get('folders', []))
             dynamic_folders = list(self.config['default'].get('dynamic_folders', []))
@@ -348,7 +348,7 @@ class ProjectSetup():
         # If the relevant folders do not exist, proceed to create the entire folder structure
         for path in paths:
             try:
-                os.makedirs(path)
+                os.makedirs(path, exist_ok=True)
             except OSError as e:
                 print(f"Error: Unable to create folder {path} due to {e}.")
                 sys.exit(1)
@@ -377,17 +377,6 @@ class ProjectSetup():
 
         with open(project_file, 'a') as handle:
             handle.write(info_string)
-
-
-    def _duplicateProjectFile(self, project_file):
-        hidden_file = self._getHiddenProjectFile(project_file)
-        if not os.path.isfile(hidden_file) and os.path.isfile(project_file):
-            shutil.copy(project_file, hidden_file)
-
-
-    def _getHiddenProjectFile(self, project_file):
-        index = project_file.rfind('/')
-        return project_file[:index+1] + '.' + project_file[index+1:]
 
 
 if __name__ == '__main__':
