@@ -55,7 +55,7 @@ class ProjectSetup():
         self.destination, self.project_type, self.original_type = self._processArgs(self.args, self.project_types)
 
         if self.args.type == 'edit':
-            if len(os.listdir(self.destination)) != 0:
+            if any(not f.startswith('.') for f in os.listdir(self.destination)):
                 print(f"Error: Destination '{self.destination}' is not empty. 'edit' projects can only be created in an empty directory.")
                 sys.exit(1)
 
@@ -108,7 +108,6 @@ class ProjectSetup():
         # Always create log files after folder creation
         project_file = self._touchProjectFile(self.destination)
         self._pipeProjectInfo(project_file)
-        self._duplicateProjectFile(project_file)
 
         # return info that the project was successfully created
         print(f"{self.args.type} project '{self.project_folder_name}' was successfully created at {self.destination}")
@@ -275,13 +274,17 @@ class ProjectSetup():
         """Return base and dynamic folder templates for a given project type."""
         type_config = self.config['project_types'].get(base_type, {})
 
-        base_paths = list(self.config['default'].get('folders', []))
-        base_paths.extend(type_config.get('folders', []))
+        if base_type == 'edit':
+            base_paths = []
+            dynamic_folders = []
+        else:
+            base_paths = list(self.config['default'].get('folders', []))
+            dynamic_folders = list(self.config['default'].get('dynamic_folders', []))
 
+        base_paths.extend(type_config.get('folders', []))
         omit = set(type_config.get('omit', []))
         base_paths = [path for path in base_paths if path not in omit]
 
-        dynamic_folders = list(self.config['default'].get('dynamic_folders', []))
         dynamic_folders.extend(type_config.get('dynamic_folders', []))
 
         return self._unique(base_paths), dynamic_folders, bool(type_config.get('subfolder'))
@@ -372,10 +375,8 @@ class ProjectSetup():
             '\nMounted volumes at creation time:\n%s'% check_output(["df", "-h"]).decode('utf-8')+ \
             '\n\n==============================\n\n'
 
-        targets = [project_file, self._getHiddenProjectFile(project_file)]
-        for path in targets:
-            with open(path, 'a') as handle:
-                handle.write(info_string)
+        with open(project_file, 'a') as handle:
+            handle.write(info_string)
 
 
     def _duplicateProjectFile(self, project_file):
