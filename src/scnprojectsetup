@@ -45,10 +45,19 @@ class ProjectSetup():
         self.config = self._initConfig(json_config)
         self.args = self._parser(json_config)
 
-        self.was_name_passed = self.args.name is not None
+        if self.args.name != os.path.basename(os.path.normpath(self.args.destination)):
+            print(f"Error: Project name '{self.args.name}' does not match destination volume name '{os.path.basename(os.path.normpath(self.args.destination))}'.")
+            sys.exit(1)
 
         if self.args.destination.endswith('_edit'):
             self.args.type = 'edit'
+
+        self.destination, self.project_type, self.original_type = self._processArgs(self.args, self.project_types)
+
+        if self.args.type == 'edit':
+            if len(os.listdir(self.destination)) != 0:
+                print(f"Error: Destination '{self.destination}' is not empty. 'edit' projects can only be created in an empty directory.")
+                sys.exit(1)
 
         # Episodic support: prompt for season/episode if type is 'eps'
         self.season = None
@@ -67,11 +76,7 @@ class ProjectSetup():
                 sys.exit(1)
 
         # Derive a consistent project folder name that can be reused across project types
-        if self.args.name:
-            self.original_project_name = self.args.name
-        else:
-            self.original_project_name = os.path.basename(os.path.normpath(self.args.destination))
-            self.args.name = self.original_project_name
+        self.original_project_name = self.args.name
         self.series_base_name = self.original_project_name
         if self.args.type == 'eps' and self.season is not None:
             suffix_match = re.match(r'^(?P<base>.+)_s(?P<season>\d{2})$', self.original_project_name)
@@ -176,20 +181,19 @@ class ProjectSetup():
             prog = 'scnprojectsetup',
             formatter_class = argparse.RawTextHelpFormatter,
             description = 'An app that creates project folders based on a config file.',
-            usage = '%(prog)s [name] type destination\n' +\
-            'example: %(prog)s starwars ftr /Volumes/projects\n' +\
-            'example: %(prog)s ftr /Volumes/starwars')
+            usage = '%(prog)s name type destination\n' +
+            'example: %(prog)s starwars ftr /Volumes/starwars')
+        parser.add_argument("name", help="Project name")
         parser.add_argument("type",help=(self._buildTypeString()))
         parser.add_argument("destination",help="Specify a destination folder"+\
                             '\n[ Tip! You can drag`n`drop destination folder from Finder ]',
                             metavar='destination')
-        parser.add_argument("name",nargs='?', default=None, help="Project name (optional, can be derived from destination)")
         parser.add_argument("-v","--verbose",help='Increase output verbosity',
                             action="store_true")
         parser.add_argument("-c","--config",help='Specify a custom config file',
                             default=json_config,
                             metavar='FILE')
-        if len(sys.argv) >= 3:
+        if len(sys.argv) >= 4:
             args = parser.parse_args()
         elif '-h' in sys.argv or '--help' in sys.argv:
             print('\nVersion: ' + self.version)
@@ -261,10 +265,7 @@ class ProjectSetup():
         if not os.path.isdir(destination_root):
             print(f"{destination_root} does not exist. Project not created")
             sys.exit(0)
-        if self.was_name_passed:
-            destination = os.path.join(destination_root,project_name)
-        else:
-            destination = destination_root
+        destination = destination_root
         if verbose:
             print('DESTINATION DIR: %s' % destination)
 
@@ -300,13 +301,13 @@ class ProjectSetup():
         base_paths, dynamic_folders, subfolder = self._collectFolderTemplates(base_type)
 
         project_paths = []
-        base_root = os.path.join(path_root, path_type) if subfolder else path_root
+        base_root = os.path.join(path_root, self.original_type) if subfolder else path_root
 
         for path in base_paths:
             project_paths.append(os.path.join(base_root, path))
 
         for template in dynamic_folders:
-            dynamic_folder = template.format(name=self.project_folder_name, type=self.args.type)
+            dynamic_folder = template.format(name=self.project_folder_name, type=self.original_type)
             project_paths.append(os.path.join(base_root, dynamic_folder))
 
         return project_paths
@@ -332,8 +333,11 @@ class ProjectSetup():
                 if os.path.exists(folder):
                     print(f"{folder} already exists.\nNo project folders created")
                     sys.exit(0)
+        elif self.args.type == 'edit':
+            # This is handled by the check in __init__
+            pass
         elif not self.destination.endswith('_edit'):
-            top_level_folder = os.path.join(self.destination, self.args.type)
+            top_level_folder = os.path.join(self.destination, self.original_type)
             if os.path.exists(top_level_folder):
                 print(f"{top_level_folder} already exists.\nNo project folders created")
                 sys.exit(0)
