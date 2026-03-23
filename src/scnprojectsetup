@@ -45,15 +45,10 @@ class ProjectSetup():
         self.config = self._initConfig(json_config)
         self.args = self._parser(json_config)
 
+        self.was_name_passed = self.args.name is not None
+
         if self.args.destination.endswith('_edit'):
-            self.project_folder_name = os.path.basename(os.path.normpath(self.args.destination))
-            self.destination = self.args.destination
-            self._createEditProject()
-            project_file = self._touchProjectFile(self.destination)
-            self._pipeProjectInfo(project_file)
-            self._duplicateProjectFile(project_file)
-            print(f"Edit project '{self.project_folder_name}' was successfully created at {self.destination}")
-            sys.exit(0)
+            self.args.type = 'edit'
 
         # Episodic support: prompt for season/episode if type is 'eps'
         self.season = None
@@ -135,14 +130,6 @@ class ProjectSetup():
 
         return project_paths
 
-    def _createEditProject(self):
-        paths = [os.path.join(self.args.destination, path) for path in self.config['edit_template']]
-        for path in paths:
-            if os.path.exists(path):
-                print(f"{path} already exists.\\nNo project folders created")
-                sys.exit(0)
-        self._createProject(paths)
-
     def _initConfig(self,json_config):
         # load the json file into memory as a dictionary
         with open(json_config, 'r', encoding='utf-8') as json_data:
@@ -191,8 +178,7 @@ class ProjectSetup():
             description = 'An app that creates project folders based on a config file.',
             usage = '%(prog)s [name] type destination\n' +\
             'example: %(prog)s starwars ftr /Volumes/projects\n' +\
-            'example: %(prog)s ftr /Volumes/starwars',
-            metavar='destination')
+            'example: %(prog)s ftr /Volumes/starwars')
         parser.add_argument("type",help=(self._buildTypeString()))
         parser.add_argument("destination",help="Specify a destination folder"+\
                             '\n[ Tip! You can drag`n`drop destination folder from Finder ]',
@@ -275,7 +261,7 @@ class ProjectSetup():
         if not os.path.isdir(destination_root):
             print(f"{destination_root} does not exist. Project not created")
             sys.exit(0)
-        if self.args.name:
+        if self.was_name_passed:
             destination = os.path.join(destination_root,project_name)
         else:
             destination = destination_root
@@ -351,35 +337,6 @@ class ProjectSetup():
             if os.path.exists(top_level_folder):
                 print(f"{top_level_folder} already exists.\nNo project folders created")
                 sys.exit(0)
-        else:
-             if os.path.exists(self.destination):
-                print(f"{self.destination} already exists.\nNo project folders created")
-                sys.exit(0)
-            # For episodic, check if any episode folder already exists (direct children of series folder)
-            episode_folders = set()
-            for path in paths:
-                # episode folder is always .../{series_folder}/{episode_folder}/...
-                parts = path.split(os.sep)
-                # Find the index of the series folder (destination)
-                try:
-                    dest_index = parts.index(os.path.basename(self.destination))
-                    episode_folder = os.sep.join(parts[:dest_index+2])
-                    episode_folders.add(episode_folder)
-                except ValueError:
-                    continue
-            for folder in episode_folders:
-                if os.path.exists(folder):
-                    print(f"{folder} already exists.\nNo project folders created")
-                    sys.exit(0)
-        else:
-            top_level_folder = os.path.join(self.destination, self.args.type)
-            if not self.destination.endswith('_edit') and os.path.exists(top_level_folder):
-                print(f"{top_level_folder} already exists.\nNo project folders created")
-                sys.exit(0)
-        else:
-            if os.path.exists(self.destination):
-                print(f"{self.destination} already exists.\nNo project folders created")
-                sys.exit(0)
 
         # If the relevant folders do not exist, proceed to create the entire folder structure
         for path in paths:
@@ -391,7 +348,7 @@ class ProjectSetup():
 
 
     def _touchProjectFile(self, destination):
-        project_file = os.path.join(destination, ('_' + self.project_folder_name + '.txt'))
+        project_file = os.path.join(destination, ('.' + self.project_folder_name + '.txt'))
         if not os.path.isfile(project_file):
             open(project_file, 'a').close()
 
