@@ -31,7 +31,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.9.3'
+        self.version = '1.9.4'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -44,6 +44,20 @@ class ProjectSetup():
         # initialise the config file and get user arguments
         self.config = self._initConfig(json_config)
         self.args = self._parser(json_config)
+
+        if self.args.name != os.path.basename(os.path.normpath(self.args.destination)):
+            print(f"Error: Project name '{self.args.name}' does not match destination volume name '{os.path.basename(os.path.normpath(self.args.destination))}'.")
+            sys.exit(1)
+
+        if self.args.destination.endswith('_edit'):
+            self.args.type = 'edit'
+
+        self.destination, self.project_type, self.original_type = self._processArgs(self.args, self.project_types)
+
+        if self.args.type == 'edit':
+            if any(not f.startswith('.') for f in os.listdir(self.destination)):
+                print(f"Error: Destination '{self.destination}' is not empty. 'edit' projects can only be created in an empty directory.")
+                sys.exit(1)
 
         # Episodic support: prompt for season/episode if type is 'eps'
         self.season = None
@@ -94,7 +108,6 @@ class ProjectSetup():
         # Always create log files after folder creation
         project_file = self._touchProjectFile(self.destination)
         self._pipeProjectInfo(project_file)
-        self._duplicateProjectFile(project_file)
 
         # return info that the project was successfully created
         print(f"{self.args.type} project '{self.project_folder_name}' was successfully created at {self.destination}")
@@ -167,9 +180,9 @@ class ProjectSetup():
             prog = 'scnprojectsetup',
             formatter_class = argparse.RawTextHelpFormatter,
             description = 'An app that creates project folders based on a config file.',
-            usage = '%(prog)s name type destination\n' +\
-            'example: %(prog)s starwars ftr /Volumes/scn_ftr_04')
-        parser.add_argument("name",help="Project name")
+            usage = '%(prog)s name type destination\n' +
+            'example: %(prog)s starwars ftr /Volumes/starwars')
+        parser.add_argument("name", help="Project name")
         parser.add_argument("type",help=(self._buildTypeString()))
         parser.add_argument("destination",help="Specify a destination folder"+\
                             '\n[ Tip! You can drag`n`drop destination folder from Finder ]',
@@ -179,7 +192,7 @@ class ProjectSetup():
         parser.add_argument("-c","--config",help='Specify a custom config file',
                             default=json_config,
                             metavar='FILE')
-        if len(sys.argv) == 4:
+        if len(sys.argv) >= 4:
             args = parser.parse_args()
         elif '-h' in sys.argv or '--help' in sys.argv:
             print('\nVersion: ' + self.version)
@@ -251,7 +264,7 @@ class ProjectSetup():
         if not os.path.isdir(destination_root):
             print(f"{destination_root} does not exist. Project not created")
             sys.exit(0)
-        destination = os.path.join(destination_root,project_name)
+        destination = destination_root
         if verbose:
             print('DESTINATION DIR: %s' % destination)
 
@@ -261,13 +274,17 @@ class ProjectSetup():
         """Return base and dynamic folder templates for a given project type."""
         type_config = self.config['project_types'].get(base_type, {})
 
-        base_paths = list(self.config['default'].get('folders', []))
-        base_paths.extend(type_config.get('folders', []))
+        if base_type == 'edit':
+            base_paths = []
+            dynamic_folders = []
+        else:
+            base_paths = list(self.config['default'].get('folders', []))
+            dynamic_folders = list(self.config['default'].get('dynamic_folders', []))
 
+        base_paths.extend(type_config.get('folders', []))
         omit = set(type_config.get('omit', []))
         base_paths = [path for path in base_paths if path not in omit]
 
-        dynamic_folders = list(self.config['default'].get('dynamic_folders', []))
         dynamic_folders.extend(type_config.get('dynamic_folders', []))
 
         return self._unique(base_paths), dynamic_folders, bool(type_config.get('subfolder'))
@@ -287,13 +304,13 @@ class ProjectSetup():
         base_paths, dynamic_folders, subfolder = self._collectFolderTemplates(base_type)
 
         project_paths = []
-        base_root = os.path.join(path_root, path_type) if subfolder else path_root
+        base_root = os.path.join(path_root, self.original_type) if subfolder else path_root
 
         for path in base_paths:
             project_paths.append(os.path.join(base_root, path))
 
         for template in dynamic_folders:
-            dynamic_folder = template.format(name=self.project_folder_name, type=self.args.type)
+            dynamic_folder = template.format(name=self.project_folder_name, type=self.original_type)
             project_paths.append(os.path.join(base_root, dynamic_folder))
 
         return project_paths
@@ -319,8 +336,11 @@ class ProjectSetup():
                 if os.path.exists(folder):
                     print(f"{folder} already exists.\nNo project folders created")
                     sys.exit(0)
-        else:
-            top_level_folder = os.path.join(self.destination, self.args.type)
+        elif self.args.type == 'edit':
+            # This is handled by the check in __init__
+            pass
+        elif not self.destination.endswith('_edit'):
+            top_level_folder = os.path.join(self.destination, self.original_type)
             if os.path.exists(top_level_folder):
                 print(f"{top_level_folder} already exists.\nNo project folders created")
                 sys.exit(0)
@@ -335,7 +355,7 @@ class ProjectSetup():
 
 
     def _touchProjectFile(self, destination):
-        project_file = os.path.join(destination, ('_' + self.project_folder_name + '.txt'))
+        project_file = os.path.join(destination, ('.' + self.project_folder_name + '.txt'))
         if not os.path.isfile(project_file):
             open(project_file, 'a').close()
 
@@ -355,10 +375,8 @@ class ProjectSetup():
             '\nMounted volumes at creation time:\n%s'% check_output(["df", "-h"]).decode('utf-8')+ \
             '\n\n==============================\n\n'
 
-        targets = [project_file, self._getHiddenProjectFile(project_file)]
-        for path in targets:
-            with open(path, 'a') as handle:
-                handle.write(info_string)
+        with open(project_file, 'a') as handle:
+            handle.write(info_string)
 
 
     def _duplicateProjectFile(self, project_file):
