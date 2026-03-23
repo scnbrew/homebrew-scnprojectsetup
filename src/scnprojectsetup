@@ -31,7 +31,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.9.5'
+        self.version = '1.9.8'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -96,9 +96,9 @@ class ProjectSetup():
         # process the arguments
         self.destination, self.project_type, self.original_type = self._processArgs(self.args, self.project_types)
         if self.args.type == 'eps':
-            destination_root = os.path.dirname(self.destination)
-            self.destination = os.path.join(destination_root, self.project_folder_name)
+            # Episodic projects should be created directly under destination.
             self.paths = self._getEpisodicProjectPaths(self.destination, self.series_base_name, self.season, self.episode_count)
+            self.paths = self._handleExistingEpisodicCommon(self.paths, self.destination)
         else:
             self.paths = self._getProjectPaths(self.original_type, self.destination)
 
@@ -117,8 +117,9 @@ class ProjectSetup():
         formatted_paths = base_paths + [df.format(name=self.project_folder_name, type='eps') for df in dynamic_folders]
         formatted_paths = self._unique(formatted_paths)
 
-        season_root = destination  # For episodic projects, destination already points at the season folder
-        project_paths = [season_root]
+        # Episodic projects create episodes under destination without a season wrapper folder.
+        season_root = destination
+        project_paths = []
 
         for ep in range(1, episode_count + 1):
             episode_folder = f"{series_name}_s{season:02d}e{ep:02d}"
@@ -133,6 +134,24 @@ class ProjectSetup():
             project_paths.append(os.path.join(common_root, base))
 
         return project_paths
+
+    def _handleExistingEpisodicCommon(self, paths, destination):
+        common_root = os.path.join(destination, '_common')
+        if not os.path.isdir(common_root):
+            return paths
+
+        try:
+            answer = input("_common already exists. Skip _common and create only episode folders? [y/N]: ").strip().lower()
+        except EOFError:
+            answer = 'n'
+
+        if answer in ('y', 'yes'):
+            return [
+                path for path in paths
+                if path != common_root and not path.startswith(common_root + os.sep)
+            ]
+
+        return paths
 
     def _initConfig(self,json_config):
         # load the json file into memory as a dictionary
@@ -320,25 +339,10 @@ class ProjectSetup():
 
     def _createProject(self, paths):
         if self.args.type == 'eps':
-            if os.path.exists(self.destination):
-                print(f"{self.destination} already exists.\nNo project folders created")
+            existing_paths = [path for path in paths if os.path.exists(path)]
+            if existing_paths:
+                print(f"{existing_paths[0]} already exists.\nNo project folders created")
                 sys.exit(0)
-            # For episodic, check if any episode folder already exists (direct children of series folder)
-            episode_folders = set()
-            for path in paths:
-                # episode folder is always .../{series_folder}/{episode_folder}/...
-                parts = path.split(os.sep)
-                # Find the index of the series folder (destination)
-                try:
-                    dest_index = parts.index(os.path.basename(self.destination))
-                    episode_folder = os.sep.join(parts[:dest_index+2])
-                    episode_folders.add(episode_folder)
-                except ValueError:
-                    continue
-            for folder in episode_folders:
-                if os.path.exists(folder):
-                    print(f"{folder} already exists.\nNo project folders created")
-                    sys.exit(0)
         elif self.args.type == 'edit':
             # This is handled by the check in __init__
             pass
@@ -360,7 +364,8 @@ class ProjectSetup():
 
 
     def _touchProjectFile(self, destination):
-        project_file = os.path.join(destination, ('.' + self.project_folder_name + '.txt'))
+        volume_name = os.path.basename(os.path.normpath(destination))
+        project_file = os.path.join(destination, ('.' + volume_name + '.txt'))
         if not os.path.isfile(project_file):
             open(project_file, 'a').close()
 
