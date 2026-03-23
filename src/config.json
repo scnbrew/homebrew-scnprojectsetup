@@ -44,6 +44,24 @@
         "omit": [],
         "subfolder": true
     },
+    "edit_template": [
+        "Avid MediaFiles/MXF/1",
+        "delivery/dailies",
+        "delivery/locked_delivery/ep00_yymmdd_picturelock",
+        "delivery/non-lock_delivery/220125_paasyn_ep01",
+        "editorial/assistant",
+        "editorial/documents/ale",
+        "editorial/documents/script",
+        "editorial/documents/scriptreports",
+        "editorial/editors",
+        "editorial/media/_from-set",
+        "editorial/media/composer",
+        "editorial/media/soundly audio/usr01",
+        "editorial/media/soundly audio/usr02",
+        "editorial/project",
+        "editorial/tmp",
+        "Unity Attic"
+    ],
     "project_types": {
         "ftr": {
             "description": "Feature",
@@ -104,13 +122,12 @@
             "folders": [],
             "omit": [],
             "subfolder": true
+        },
+        "eps": {
+            "description": "Episodic (TV series, multiple episodes)",
+            "folders": [],
+            "omit": [],
+            "subfolder": true
         }
-            ,
-            "eps": {
-                "description": "Episodic (TV series, multiple episodes)",
-                "folders": [],
-                "omit": [],
-                "subfolder": true
-            }
     }
 }
