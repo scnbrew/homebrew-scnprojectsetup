@@ -31,7 +31,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.9.3'
+        self.version = '1.9.4'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -62,7 +62,11 @@ class ProjectSetup():
                 sys.exit(1)
 
         # Derive a consistent project folder name that can be reused across project types
-        self.original_project_name = self.args.name
+        if self.args.name:
+            self.original_project_name = self.args.name
+        else:
+            self.original_project_name = os.path.basename(os.path.normpath(self.args.destination))
+            self.args.name = self.original_project_name
         self.series_base_name = self.original_project_name
         if self.args.type == 'eps' and self.season is not None:
             suffix_match = re.match(r'^(?P<base>.+)_s(?P<season>\d{2})$', self.original_project_name)
@@ -167,19 +171,21 @@ class ProjectSetup():
             prog = 'scnprojectsetup',
             formatter_class = argparse.RawTextHelpFormatter,
             description = 'An app that creates project folders based on a config file.',
-            usage = '%(prog)s name type destination\n' +\
-            'example: %(prog)s starwars ftr /Volumes/scn_ftr_04')
-        parser.add_argument("name",help="Project name")
+            usage = '%(prog)s [name] type destination\n' +\
+            'example: %(prog)s starwars ftr /Volumes/scn_ftr_04\n' +\
+            'example: %(prog)s ftr /Volumes/starwars',
+            metavar='destination')
         parser.add_argument("type",help=(self._buildTypeString()))
         parser.add_argument("destination",help="Specify a destination folder"+\
                             '\n[ Tip! You can drag`n`drop destination folder from Finder ]',
                             metavar='destination')
+        parser.add_argument("name",nargs='?', default=None, help="Project name (optional, can be derived from destination)")
         parser.add_argument("-v","--verbose",help='Increase output verbosity',
                             action="store_true")
         parser.add_argument("-c","--config",help='Specify a custom config file',
                             default=json_config,
                             metavar='FILE')
-        if len(sys.argv) == 4:
+        if len(sys.argv) >= 3:
             args = parser.parse_args()
         elif '-h' in sys.argv or '--help' in sys.argv:
             print('\nVersion: ' + self.version)
@@ -251,7 +257,10 @@ class ProjectSetup():
         if not os.path.isdir(destination_root):
             print(f"{destination_root} does not exist. Project not created")
             sys.exit(0)
-        destination = os.path.join(destination_root,project_name)
+        if self.args.name:
+            destination = os.path.join(destination_root,project_name)
+        else:
+            destination = destination_root
         if verbose:
             print('DESTINATION DIR: %s' % destination)
 
