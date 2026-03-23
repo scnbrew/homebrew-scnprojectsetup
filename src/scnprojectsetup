@@ -275,17 +275,20 @@ class ProjectSetup():
         type_config = self.config['project_types'].get(base_type, {})
 
         if base_type == 'edit':
-            base_paths = list(self.config['project_types']['edit'].get('folders', []))
-            dynamic_folders = list(self.config['project_types']['edit'].get('dynamic_folders', []))
+            # Edit projects should only create folders explicitly listed under edit.
+            base_paths = list(type_config.get('folders', []))
+            dynamic_folders = list(type_config.get('dynamic_folders', []))
         else:
             base_paths = list(self.config['default'].get('folders', []))
             dynamic_folders = list(self.config['default'].get('dynamic_folders', []))
 
-        base_paths.extend(type_config.get('folders', []))
+            # Non-edit project types inherit default folders and can add overrides.
+            base_paths.extend(type_config.get('folders', []))
         omit = set(type_config.get('omit', []))
         base_paths = [path for path in base_paths if path not in omit]
 
-        dynamic_folders.extend(type_config.get('dynamic_folders', []))
+        if base_type != 'edit':
+            dynamic_folders.extend(type_config.get('dynamic_folders', []))
 
         return self._unique(base_paths), dynamic_folders, bool(type_config.get('subfolder'))
 
@@ -339,10 +342,12 @@ class ProjectSetup():
         elif self.args.type == 'edit':
             # This is handled by the check in __init__
             pass
-        elif not self.destination.endswith('_edit'):
-            top_level_folder = os.path.join(self.destination, self.original_type)
-            if os.path.exists(top_level_folder):
-                print(f"{top_level_folder} already exists.\nNo project folders created")
+        else:
+            # For non-edit projects, prevent partial overwrites by checking the
+            # concrete paths that would be created regardless of subfolder mode.
+            existing_paths = [path for path in paths if os.path.exists(path)]
+            if existing_paths:
+                print(f"{existing_paths[0]} already exists.\nNo project folders created")
                 sys.exit(0)
 
         # If the relevant folders do not exist, proceed to create the entire folder structure
