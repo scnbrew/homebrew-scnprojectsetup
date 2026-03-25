@@ -1,7 +1,7 @@
 scnprojectsetup
 ==============
 
-CLI tool for creating VFX project folder structures from `src/config.json`.
+CLI tool for creating  project folder structures
 
 Usage
 -----
@@ -11,6 +11,21 @@ Optional flags:
 - `--no-top-folder`: create the project type folder directly in destination
 - `-v`, `--verbose`
 - `-c`, `--config`
+
+
+Supported types:
+`adv`     (Advertisement and tv commercial, etc.)
+`edit`    (Editorial Project)
+`epk`     (Electronic press kit)
+`eps`     (Episodic (TV series, multiple episodes))
+`ftr`     (Feature)
+`pro`    (Promo material)
+`shr`    (Short)
+`sizzle`  (Sizzle Reel)
+`some`    (Social Media)
+`tlr`     (Trailer)
+`tsr`     (Teaser)
+`tst`     (Test project, camera tests, etc.)
 
 Behavior
 --------
@@ -24,11 +39,11 @@ Behavior
 Examples
 --------
 - Default top-folder:
-	- `scnprojectsetup melange_yessfilm_201106992_260224 adv /Volumes/scn_commercial`
-	- Creates under `/Volumes/scn_commercial/melange_yessfilm_201106992_260224/adv`
+	- `scnprojectsetup spec-ad_client_201106992_260224 adv /Volumes/scn_commercial`
+	- Creates under `/Volumes/scn_commercial/spec-ad_client_201106992_260224/adv`
 - Skip top-folder:
-	- `scnprojectsetup ekte_kjarlighet_201106993_260325 ftr /Volumes/ekte-kjarlighet --no-top-folder`
-	- Creates under `/Volumes/ekte-kjarlighet/ftr`
+	- `scnprojectsetup kjarleik ftr /Volumes/ekte-kjarlighet --no-top-folder`
+	- Creates under `/Volumes/kjarleik/ftr`
 
 Build instructions
 ------------------
