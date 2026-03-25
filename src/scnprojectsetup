@@ -31,7 +31,7 @@ class ProjectSetup():
 
     def __init__(self):
 
-        self.version = '1.9.8'
+        self.version = '1.9.9'
 
         # get the config file
         here = str(os.path.dirname(os.path.realpath(__file__)))
@@ -45,14 +45,11 @@ class ProjectSetup():
         self.config = self._initConfig(json_config)
         self.args = self._parser(json_config)
 
-        if self.args.name != os.path.basename(os.path.normpath(self.args.destination)):
-            print(f"Error: Project name '{self.args.name}' does not match destination volume name '{os.path.basename(os.path.normpath(self.args.destination))}'.")
-            sys.exit(1)
-
         if self.args.destination.endswith('_edit'):
             self.args.type = 'edit'
 
         self.destination, self.project_type, self.original_type = self._processArgs(self.args, self.project_types)
+        self.create_top_folder = self._resolveTopFolderMode(self.project_type, self.args.no_top_folder)
 
         if self.args.type == 'edit':
             if any(not f.startswith('.') for f in os.listdir(self.destination)):
@@ -99,8 +96,10 @@ class ProjectSetup():
             # Episodic projects should be created directly under destination.
             self.paths = self._getEpisodicProjectPaths(self.destination, self.series_base_name, self.season, self.episode_count)
             self.paths = self._handleExistingEpisodicCommon(self.paths, self.destination)
+            self.project_root = self.destination
         else:
-            self.paths = self._getProjectPaths(self.original_type, self.destination)
+            self.project_root = self._getProjectRoot(self.original_type, self.destination, self.create_top_folder)
+            self.paths = self._getProjectPaths(self.original_type, self.destination, self.create_top_folder)
 
         # create the project as specified
         self._createProject(self.paths)
@@ -110,7 +109,7 @@ class ProjectSetup():
         self._pipeProjectInfo(project_file)
 
         # return info that the project was successfully created
-        print(f"{self.args.type} project '{self.project_folder_name}' was successfully created at {self.destination}")
+        print(f"{self.args.type} project '{self.project_folder_name}' was successfully created at {self.project_root}")
 
     def _getEpisodicProjectPaths(self, destination, series_name, season, episode_count):
         base_paths, dynamic_folders, _ = self._collectFolderTemplates('eps')
@@ -211,6 +210,12 @@ class ProjectSetup():
         parser.add_argument("-c","--config",help='Specify a custom config file',
                             default=json_config,
                             metavar='FILE')
+        parser.add_argument(
+            "--no-top-folder",
+            dest="no_top_folder",
+            action="store_true",
+            help="Create project type folder directly in destination"
+        )
         if len(sys.argv) >= 4:
             args = parser.parse_args()
         elif '-h' in sys.argv or '--help' in sys.argv:
@@ -311,6 +316,16 @@ class ProjectSetup():
 
         return self._unique(base_paths), dynamic_folders, bool(type_config.get('subfolder'))
 
+    def _resolveTopFolderMode(self, base_type, skip_top_folder):
+        # Keep edit and episodic behavior unchanged.
+        if base_type in ('edit', 'eps'):
+            return False
+
+        if skip_top_folder:
+            return False
+
+        return True
+
     @staticmethod
     def _unique(sequence):
         seen = set()
@@ -321,12 +336,24 @@ class ProjectSetup():
                 result.append(item)
         return result
 
-    def _getProjectPaths(self, path_type, path_root):
+    def _getProjectRoot(self, path_type, path_root, create_top_folder=False):
         base_type = ''.join([i for i in path_type if not i.isdigit()])
-        base_paths, dynamic_folders, subfolder = self._collectFolderTemplates(base_type)
+        _, _, subfolder = self._collectFolderTemplates(base_type)
+
+        base_root = path_root
+        if create_top_folder:
+            base_root = os.path.join(base_root, self.project_folder_name)
+        if subfolder:
+            base_root = os.path.join(base_root, self.original_type)
+
+        return base_root
+
+    def _getProjectPaths(self, path_type, path_root, create_top_folder=False):
+        base_type = ''.join([i for i in path_type if not i.isdigit()])
+        base_paths, dynamic_folders, _ = self._collectFolderTemplates(base_type)
 
         project_paths = []
-        base_root = os.path.join(path_root, self.original_type) if subfolder else path_root
+        base_root = self._getProjectRoot(path_type, path_root, create_top_folder)
 
         for path in base_paths:
             project_paths.append(os.path.join(base_root, path))
